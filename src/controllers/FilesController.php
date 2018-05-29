@@ -1,10 +1,10 @@
 <?php
 
-namespace mix8872\files-attacher\controllers;
+namespace mix8872\filesAttacher\controllers;
 
 use Yii;
 use yii\filters\VerbFilter;
-use mix8872\files-attacher\models\Files;
+use mix8872\filesAttacher\models\Files;
 
 /**
  * MenuController implements the CRUD actions for Menu model.

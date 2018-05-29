@@ -1,6 +1,6 @@
 {
   "name": "mix8872/files-attacher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Module for files attachment",
   "type": "yii2-extension",
   "license": "MIT",

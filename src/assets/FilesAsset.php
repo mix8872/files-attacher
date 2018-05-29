@@ -6,7 +6,7 @@
  * Time: 10:32
  */
 
-namespace mix8872\files-attacher\assets;
+namespace mix8872\filesAttacher\assets;
 
 
 class FilesAsset extends \yii\web\AssetBundle
