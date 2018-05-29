@@ -6,10 +6,10 @@
  * Time: 14:24
  */
 
-namespace mix8872\files\behaviors;
+namespace mix8872\files-attacher\behaviors;
 
 use Yii;
-use mix8872\files\models\Files;
+use mix8872\files-attacher\models\Files;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
 use yii\base\InvalidConfigException;

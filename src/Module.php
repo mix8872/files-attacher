@@ -1,5 +1,5 @@
 <?php
-namespace mix8872\admin;
+namespace mix8872\files-attacher;
 
 use yii\filters\AccessControl;
 /**

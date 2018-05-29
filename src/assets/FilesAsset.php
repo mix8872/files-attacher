@@ -6,12 +6,12 @@
  * Time: 10:32
  */
 
-namespace mix8872\files\assets;
+namespace mix8872\files-attacher\assets;
 
 
 class FilesAsset extends \yii\web\AssetBundle
 {
-    public $sourcePath = '@vendor/mix8872/files/src/assets';
+    public $sourcePath = '@vendor/mix8872/files-attacher/src/assets';
     public $css = [
         'fileinput/css/fileinput.min.css',
         'css/magnific-popup.css',

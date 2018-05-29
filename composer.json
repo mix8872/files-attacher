@@ -10,7 +10,8 @@
       "email": "mix8872@yandex.ru"
     }
   ],
-  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "minimum-stability": "dev",
   "require": {
     "php": ">=7.0.0",
     "ext-json": "*",
@@ -20,10 +21,10 @@
   },
   "autoload": {
     "psr-4": {
-      "mix8872\\admin\\": "src"
+      "mix8872\\files\\": "src"
     }
   },
   "extra": {
-    "bootstrap": "mix8872\\admin\\Bootstrap"
+    "bootstrap": "mix8872\\files\\Bootstrap"
   }
 }

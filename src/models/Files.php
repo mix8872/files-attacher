@@ -1,6 +1,6 @@
 <?php
 
-namespace mix8872\files\models;
+namespace mix8872\files-attacher\models;
 
 use Yii;
 use yii\helpers\Url;
