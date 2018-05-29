@@ -1,0 +1,34 @@
+# yii console commands
+/src/yii
+/src/yii_test
+/src/yii_test.bat
+
+# composer
+src/vendor
+composer.phar
+
+# IDE
+.idea
+nbproject
+.buildpath
+.project
+.settings
+
+# env
+.env
+
+# windows thumbnail cache
+Thumbs.db
+
+# Mac DS_Store Files
+.DS_Store
+
+# phpunit
+phpunit.phar
+phpunit.xml
+
+# Vagrant
+.vagrant
+
+# Tests
+tests/codeception/*/_support/_generated/*

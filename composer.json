@@ -1,0 +1,29 @@
+{
+  "name": "mix8872/files",
+  "version": "1.0.0",
+  "description": "Module for files attachment",
+  "type": "yii2-extension",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "mix8872",
+      "email": "mix8872@yandex.ru"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.0.0",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-intl": "*",
+	"intervention/image": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "mix8872\\admin\\": "src"
+    }
+  },
+  "extra": {
+    "bootstrap": "mix8872\\admin\\Bootstrap"
+  }
+}
