@@ -1,6 +1,6 @@
 {
   "name": "mix8872/files-attacher",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Module for files attachment",
   "type": "yii2-extension",
   "license": "MIT",
@@ -21,10 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "mix8872\\files\\": "src"
+      "mix8872\\filesAttacher\\": "src"
     }
-  },
-  "extra": {
-    "bootstrap": "mix8872\\files\\Bootstrap"
   }
 }
