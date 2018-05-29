@@ -1,9 +1,9 @@
 <?php
-namespace mix8872\files-attacher;
+namespace mix8872\filesAttacher;
 
 use yii\filters\AccessControl;
 /**
- * Shop module.
+ * Files module.
  */
 class Module extends \yii\base\Module
 {
@@ -12,8 +12,8 @@ class Module extends \yii\base\Module
 	public function init()
     {
         parent::init();
-        $this->controllerNamespace = 'mix8872\files\controllers';
-        $this->setViewPath('@vendor/mix8872/files/src/views');
+        $this->controllerNamespace = 'mix8872\filesAttacher\controllers';
+        $this->setViewPath('@vendor/mix8872/files-attacher/src/views');
 		$this->registerTranslations();
     }
 
