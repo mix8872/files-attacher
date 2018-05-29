@@ -69,7 +69,7 @@ class FileAttachBehavior extends Behavior
                         $filename = Security::generateRandomString(16);
                     }
 
-                    if (false && preg_match("/^image\/.+$/i",$type)) {
+                    if (preg_match("/^image\/.+$/i",$type) && $file->saveAs($path."/".$filename.".".$extension)) {
                         $model = new Files();
                         if ($model->uploadImage($file, 'filename')) {
                             $model->model_id = $model_id;
@@ -79,12 +79,21 @@ class FileAttachBehavior extends Behavior
                             $model->tag = $tag;
                             $model->size = $file->size;
                             $model->user_id = Yii::$app->user->getId();
+							
+							$manager = new \Intervention\Image\ImageManager(['driver' => 'imagick']);
+							foreach ($model->getSizes(true) as $size) {
+								$manager->make($path."/".$filename.".".$extension)->resize($size['width'], $size['height'], function($constraint){
+									$constraint->aspectRatio();
+									$constraint->upsize()
+								})->save($size['path']);
+							}
+							
                             if ($model->save()) {
 //                                error_log("FILE SAVED SUCCESSFULL");
 //                                error_log(print_r($model->getImageUrl('filename', 'orig', true),1));
                             } else {
                                 $errors = $model->getErrors();
-                                error_log("FILE SAVE IN DB ERROR: ".print_r($errors));
+                                error_log("FILE SAVE IN DB ERROR: ".print_r($errors,1));
                             }
                         }
                     } elseif ($file->saveAs($path."/".$filename.".".$extension)) {
