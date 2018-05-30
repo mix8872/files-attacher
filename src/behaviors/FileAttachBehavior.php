@@ -24,7 +24,7 @@ class FileAttachBehavior extends Behavior
     public function events()
     {
         return [
-			ActiveRecord::EVENT_AFTER_INSERT => 'saveAttachments',
+            ActiveRecord::EVENT_AFTER_INSERT => 'saveAttachments',
             ActiveRecord::EVENT_AFTER_UPDATE => 'saveAttachments',
             ActiveRecord::EVENT_AFTER_DELETE => 'deleteAllAttachments'
         ];
@@ -40,13 +40,13 @@ class FileAttachBehavior extends Behavior
         $model_id = $this->owner->id;
 
         foreach ($this->tags as $tag) {
-            $attachments = UploadedFile::getInstancesByName('Attachment['.$class.']['.$tag.']');
+            $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $tag . ']');
             if (empty($attachments)) {
-                $attachments = UploadedFile::getInstancesByName('Attachment['.$class.']['.$model_id.']['.$tag.']');
+                $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $model_id . '][' . $tag . ']');
             }
 
             if ($attachments && !empty($attachments)) {
-                if (in_array($tag,$this->deleteOld)) {
+                if (in_array($tag, $this->deleteOld)) {
                     $olds = Files::find()->where(['tag' => $tag, 'model_name' => $class, 'model_id' => $model_id])->all();
                     if (!empty($olds)) {
                         foreach ($olds as $old) {
@@ -55,7 +55,7 @@ class FileAttachBehavior extends Behavior
                     }
                 }
 
-                $path = Yii::getAlias("@webroot/uploads/attachments/".$class."/".$model_id."/".$tag);
+                $path = Yii::getAlias("@webroot/uploads/attachments/" . $class . "/" . $model_id . "/" . $tag);
                 if (!is_dir($path)) {
                     mkdir($path, 0755, true);
                 }
@@ -65,43 +65,42 @@ class FileAttachBehavior extends Behavior
                     $type = $file->type;
                     $extension = $file->extension;
                     $filename = $security->generateRandomString(16);
-                    while (is_file($path.$filename.".".$extension)) {
+                    while (is_file($path . $filename . "." . $extension)) {
                         $filename = Security::generateRandomString(16);
                     }
 
-                    if (preg_match("/^image\/.+$/i",$type) && $file->saveAs($path."/".$filename.".".$extension)) {
-                        $model = new Files();
-                        if ($model->uploadImage($file, 'filename')) {
-                            $model->model_id = $model_id;
-                            $model->model_name = $class;
-                            $model->name = $file->baseName;
-                            $model->mime_type = $type;
-                            $model->tag = $tag;
-                            $model->size = $file->size;
-                            $model->user_id = Yii::$app->user->getId();
-							
-							$manager = new \Intervention\Image\ImageManager(['driver' => 'imagick']);
-							foreach ($model->getSizes(true) as $size) {
-								$manager->make($path."/".$filename.".".$extension)->resize($size['width'], $size['height'], function($constraint){
-									$constraint->aspectRatio();
-									$constraint->upsize()
-								})->save($size['path']);
-							}
-							
-                            if ($model->save()) {
-//                                error_log("FILE SAVED SUCCESSFULL");
-//                                error_log(print_r($model->getImageUrl('filename', 'orig', true),1));
-                            } else {
-                                $errors = $model->getErrors();
-                                error_log("FILE SAVE IN DB ERROR: ".print_r($errors,1));
-                            }
-                        }
-                    } elseif ($file->saveAs($path."/".$filename.".".$extension)) {
+                    if (preg_match("/^image\/.+$/i", $type) && $file->saveAs($path . "/" . $filename . "." . $extension)) {
                         $model = new Files();
                         $model->model_id = $model_id;
                         $model->model_name = $class;
                         $model->name = $file->baseName;
-                        $model->filename = $filename.".".$extension;
+                        $model->filename = $filename . "." . $extension;
+                        $model->mime_type = $type;
+                        $model->tag = $tag;
+                        $model->size = $file->size;
+                        $model->user_id = Yii::$app->user->getId();
+
+                        $manager = new \Intervention\Image\ImageManager(['driver' => 'imagick']);
+                        foreach ($model->getSizes(true) as $size) {
+                            $manager->make($path . "/" . $filename . "." . $extension)->resize($size['width'], $size['height'], function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })->save($size['path']);
+                        }
+
+                        if ($model->save()) {
+//                            error_log("FILE SAVED SUCCESSFULL");
+                        } else {
+                            $errors = $model->getErrors();
+                            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
+                        }
+
+                    } elseif ($file->saveAs($path . "/" . $filename . "." . $extension)) {
+                        $model = new Files();
+                        $model->model_id = $model_id;
+                        $model->model_name = $class;
+                        $model->name = $file->baseName;
+                        $model->filename = $filename . "." . $extension;
                         $model->mime_type = $type;
                         $model->tag = $tag;
                         $model->size = $file->size;
@@ -110,7 +109,7 @@ class FileAttachBehavior extends Behavior
 //                            error_log("FILE SAVED SUCCESSFULL");
                         } else {
                             $errors = $model->getErrors();
-                            error_log("FILE SAVE IN DB ERROR: ".print_r($errors));
+                            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
                         }
                     } else {
                         error_log("FILE SAVE ERROR");
@@ -155,7 +154,7 @@ class FileAttachBehavior extends Behavior
     private function _getModelName()
     {
         $fullClass = get_class($this->owner);
-        $classExplode = explode('\\',$fullClass);
+        $classExplode = explode('\\', $fullClass);
         return array_pop($classExplode);
     }
 }

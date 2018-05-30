@@ -93,7 +93,8 @@ class Files extends ActiveRecord
      */
     public function delete()
     {
-		foreach ($this->getSizes(true) as $size) {
+        $sizes = $this->getSizes(true);
+		foreach ($sizes as $size) {
 			if (file_exists($size['path'])) {
 				unlink($size['path']);
 			}
@@ -183,7 +184,7 @@ class Files extends ActiveRecord
 		}
 		$exFilename = explode('.', $this->filename);
 		$module = Yii::$app->getModule('filesAttacher');
-		if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize']) {
+		if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
 			foreach ($module->parameters['imageResize'] as $key => $size) {
 				$width = isset($size['width']) ? $size['width'] : null;
 				$height = isset($size['height']) ? $size['height'] : null;

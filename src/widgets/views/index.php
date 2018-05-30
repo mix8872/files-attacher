@@ -11,8 +11,6 @@ use yii\data\ActiveDataProvider;
 use yii\grid\GridView;
 use yii\base\Security;
 
-\mix8872\admin\assets\FilesAsset::register($this);
-
 $class = explode('\\', $model->className());
 
 $security = new Security();
@@ -119,7 +117,7 @@ $uniqueName = $security->generateRandomString(10);
                         'template' => '{delete}',
                         'buttons' => [
                             'delete' => function ($url, $model) {
-                                return Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/admin/files/delete', 'id' => $model->id], [
+                                return Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                     'class' => 'delete-attachment-file',
                                 ]);
                             }
