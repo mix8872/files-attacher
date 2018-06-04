@@ -44,6 +44,9 @@ class FileAttachBehavior extends Behavior
             if (empty($attachments)) {
                 $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $model_id . '][' . $tag . ']');
             }
+            if (empty($attachments)) {
+                $attachments = UploadedFile::getInstancesByName('Attachment');
+            }
 
             if ($attachments && !empty($attachments)) {
                 if (in_array($tag, $this->deleteOld)) {
