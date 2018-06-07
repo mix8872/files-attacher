@@ -2,7 +2,9 @@
 
 namespace mix8872\filesAttacher\controllers;
 
+use richardfan\sortable\SortableAction;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\filters\VerbFilter;
 use mix8872\filesAttacher\models\Files;
 
@@ -20,8 +22,30 @@ class DefaultController extends \yii\web\Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
+                    'ajax-update' => ['POST'],
                     'delete' => ['POST'],
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getViewPath()
+    {
+        return Yii::getAlias('@vendor/mix8872/files-attacher/src/views');
+    }
+
+    /**
+     * @return array
+     */
+    public function actions(){
+        return [
+            'sort' => [
+                'class' => SortableAction::class,
+                'activeRecordClassName' => 'mix8872\filesAttacher\models\Files',
+                'orderColumn' => 'order',
             ],
         ];
     }
@@ -33,7 +57,7 @@ class DefaultController extends \yii\web\Controller
     public function actionIndex()
     {
         $dataProvider = new ActiveDataProvider([
-            'query' => Menu::find()->where(['depth' => 0]),
+            'query' => Files::find(),
         ]);
 
         return $this->render('index', [
@@ -58,6 +82,21 @@ class DefaultController extends \yii\web\Controller
 		return $this->render('create', [
 			'model' => $model,
 		]);
+    }
+
+    public function actionAjaxUpdate($id)
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if (Yii::$app->request->isAjax) {
+            $model = Files::findOne($id);
+            unset($model->url);
+            unset($model->trueUrl);
+            unset($model->sizes);
+            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

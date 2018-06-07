@@ -64,7 +64,7 @@ class Files extends ActiveRecord
         return [
             [['model_id', 'model_name', 'name', 'filename', 'mime_type', 'tag', 'size', 'user_id'], 'required'],
             [['model_id', 'size', 'order', 'user_id', 'created_at'], 'integer'],
-            [['model_name', 'name', 'filename', 'mime_type', 'tag'], 'string', 'max' => 255],
+            [['model_name', 'name', 'filename', 'mime_type', 'tag', 'description'], 'string', 'max' => 255],
         ];
     }
 
@@ -75,16 +75,17 @@ class Files extends ActiveRecord
     {
         return [
             'id' => 'ID',
-            'model_id' => 'Model ID',
-            'model_name' => 'Model Name',
-            'name' => 'Name',
-            'filename' => 'Filename',
-            'mime_type' => 'Mime Type',
-            'tag' => 'Tag',
-            'size' => 'Size',
-            'order' => 'Order',
-            'user_id' => 'User ID',
-            'created_at' => 'Created At',
+            'model_id' => Yii::t('files', 'ID модели'),
+            'model_name' => Yii::t('files', 'Имя модели'),
+            'name' => Yii::t('files', 'Имя файла'),
+            'filename' => Yii::t('files', 'Файл'),
+            'mime_type' => 'Mime тип',
+            'tag' => Yii::t('files', 'Тег'),
+            'size' => Yii::t('files', 'Размер'),
+            'order' => Yii::t('files', 'Порядок'),
+            'user_id' => Yii::t('files', 'Пользователь'),
+            'created_at' => Yii::t('files', 'Добавлен'),
+            'description' => Yii::t('files', 'Описание'),
         ];
     }
 

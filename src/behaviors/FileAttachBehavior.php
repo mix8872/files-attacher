@@ -138,7 +138,7 @@ class FileAttachBehavior extends Behavior
     {
         // $class = explode('\\',$this->owner->className());
         // $class = $class[sizeof($class)-1];
-        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag]);
+        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
         if ($asQuery) {
             return $files;
         }
@@ -147,7 +147,7 @@ class FileAttachBehavior extends Behavior
 
     public function getAllFiles($asQuery = false)
     {
-        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id]);
+        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id])->orderBy('order');
         if ($asQuery) {
             return $files;
         }

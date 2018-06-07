@@ -15,6 +15,7 @@ class FilesAsset extends \yii\web\AssetBundle
     public $css = [
         'fileinput/css/fileinput.min.css',
         'css/magnific-popup.css',
+        'css/files.css',
     ];
     public $js = [
         'fileinput/js/plugins/sortable.min.js',
@@ -28,6 +29,7 @@ class FilesAsset extends \yii\web\AssetBundle
     ];
 
     public $depends = [
+		'yii\jui\JuiAsset',
 		'mix8872\admin\assets\MainAsset',
     ];
 }

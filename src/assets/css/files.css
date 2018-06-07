@@ -1,0 +1,7 @@
+.file_row td {
+    vertical-align: middle !important;
+}
+
+.file_hidden-input {
+    display: none;
+}

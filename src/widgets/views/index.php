@@ -7,8 +7,9 @@
  */
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
-use yii\grid\GridView;
+use richardfan\sortable\SortableGridView;
 use yii\base\Security;
 
 $class = explode('\\', $model->className());
@@ -80,14 +81,18 @@ $uniqueName = $security->generateRandomString(10);
             <?php endif;
         endif; ?>
         <?php if ($list && $multiple): ?>
-            <?= GridView::widget([
+            <?= SortableGridView::widget([
                 'dataProvider' => new ActiveDataProvider(['query' => $model->getFiles($tag, 1),]),
                 'rowOptions' => function ($model) {
                     return ['id' => $model->id];
                 },
                 'showOnEmpty' => false,
+                'sortUrl' => Url::to(['/filesAttacher/default/sort']),
+                'rowOptions' => [
+                    'class' => 'file_row'
+                ],
                 'columns' => [
-//            ['class' => 'yii\grid\SerialColumn'],
+
                     'name',
                     'mime_type',
                     [
@@ -112,12 +117,25 @@ $uniqueName = $security->generateRandomString(10);
                         }
                     ],
                     [
+                        'attribute' => 'description',
+                        'format' => 'raw',
+                        'value' => function($model) {
+                            return Html::tag('div', $model->description, ['class' => 'file_name'])
+                                . Html::tag('div', Html::activeInput('text', $model, 'description'), ['class' => 'file_hidden-input']);
+                        }
+                    ],
+                    [
                         'class' => 'yii\grid\ActionColumn',
-//				'header' => 'Редактирование',
-                        'template' => '{delete}',
+                        'template' => '{update} {delete}',
+//                        'width' => '50px',
                         'buttons' => [
+                            'update' => function ($url, $model) {
+                                return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/filesAttacher/default/ajax-update', 'id' => $model->id], [
+                                    'class' => 'js-update-attachment-description',
+                                ]);
+                            },
                             'delete' => function ($url, $model) {
-                                return Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $model->id], [
+                                return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                     'class' => 'delete-attachment-file',
                                 ]);
                             }
