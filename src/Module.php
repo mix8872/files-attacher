@@ -22,7 +22,7 @@ class Module extends \yii\base\Module
          \Yii::$app->i18n->translations['files'] = [
             'class' => 'yii\i18n\PhpMessageSource',
             'sourceLanguage' => 'ru-RU',
-            'basePath' => '@vendor/mix8872/files/src/messages',
+            'basePath' => '@vendor/mix8872/files-attacher/src/messages',
             ];
  
     }

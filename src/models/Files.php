@@ -33,6 +33,17 @@ class Files extends ActiveRecord
         return 'files';
     }
 
+    public function init()
+    {
+        parent::init();
+
+        Yii::$app->i18n->translations['files'] = [
+            'class' => 'yii\i18n\PhpMessageSource',
+            'sourceLanguage' => 'ru-RU',
+            'basePath' => '@vendor/mix8872/files-attacher/src/messages',
+        ];
+    }
+
     public function behaviors()
     {
         parent::behaviors();
@@ -73,6 +84,7 @@ class Files extends ActiveRecord
      */
     public function attributeLabels()
     {
+        $a = 1;
         return [
             'id' => 'ID',
             'model_id' => Yii::t('files', 'ID модели'),
