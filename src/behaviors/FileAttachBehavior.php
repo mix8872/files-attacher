@@ -68,8 +68,21 @@ class FileAttachBehavior extends Behavior
                     while (is_file($path . $filename . "." . $extension)) {
                         $filename = Security::generateRandomString(16);
                     }
+                    $filePath = $path . "/" . $filename . "." . $extension;
 
-                    if (preg_match("/^image\/.+$/i", $type) && $file->saveAs($path . "/" . $filename . "." . $extension)) {
+                    if (preg_match("/^image\/.+$/i", $type) && $file->saveAs($filePath)) {
+                        $module = Yii::$app->getModule('filesAttacher');
+                        if (isset($module->parameters['origResize'])
+                            && is_array($module->parameters['origResize'])
+                            && (isset($module->parameters['origResize']['width'])
+                                || isset($module->parameters['origResize']['height'])
+                            )
+                        ) {
+                            $resWidth = isset($module->parameters['origResize']['width']) ? $module->parameters['origResize']['width'] : null;
+                            $resHeight = isset($module->parameters['origResize']['width']) ? $module->parameters['origResize']['height'] : null;
+                            $this->_saveSize($path, $filename, $extension, $resWidth, $resHeight, $filePath);
+                        }
+
                         $model = new Files();
                         $model->model_id = $model_id;
                         $model->model_name = $class;
@@ -79,13 +92,10 @@ class FileAttachBehavior extends Behavior
                         $model->tag = $tag;
                         $model->size = $file->size;
                         $model->user_id = Yii::$app->user->getId();
+                        $model->fullModelName = $this->_getModelName(1);
 
-                        $manager = new \Intervention\Image\ImageManager(['driver' => 'imagick']);
                         foreach ($model->getSizes(true) as $size) {
-                            $manager->make($path . "/" . $filename . "." . $extension)->resize($size['width'], $size['height'], function ($constraint) {
-                                $constraint->aspectRatio();
-                                $constraint->upsize();
-                            })->save($size['path']);
+                            $this->_saveSize($path, $filename, $extension, $size['width'], $size['height'], $size['path']);
                         }
 
                         if ($model->save()) {
@@ -123,10 +133,34 @@ class FileAttachBehavior extends Behavior
         return null;
     }
 
+    /**
+     * @param $dir - Path to model upload dir
+     * @param $filename - Generated filename
+     * @param $extension - File extension
+     * @param $width - Resize width
+     * @param $height - Resize height
+     * @param $path - Save full path
+     * @return \Intervention\Image\Image
+     */
+    private function _saveSize($dir, $filename, $extension, $width, $height, $path)
+    {
+        if (isset($width) || isset($height)) {
+            $module = Yii::$app->getModule('filesAttacher');
+            $driver = isset($module->parameters['imgProcessDriver']) ? $module->parameters['imgProcessDriver'] : 'imagick';
+            $manager = new \Intervention\Image\ImageManager(['driver' => $driver]);
+            return $manager->make($dir . "/" . $filename . "." . $extension)->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->save($path);
+        }
+    }
+
     public function deleteAllAttachments()
     {
         $files = Files::findAll(['model_id' => $this->owner->id]);
+        $fullModelName = $this->_getModelName(1);
         foreach ($files as $file) {
+            $file->fullModelName = $fullModelName;
             $file->delete();
         }
     }
@@ -135,7 +169,9 @@ class FileAttachBehavior extends Behavior
     {
         // $class = explode('\\',$this->owner->className());
         // $class = $class[sizeof($class)-1];
-        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
+        $filesModel = new Files();
+        $filesModel->fullModelName = $this->_getModelName(1);
+        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
         if ($asQuery) {
             return $files;
         }
@@ -144,16 +180,21 @@ class FileAttachBehavior extends Behavior
 
     public function getAllFiles($asQuery = false)
     {
-        $files = Files::find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id])->orderBy('order');
+        $filesModel = new Files();
+        $filesModel->fullModelName = $this->_getModelName(1);
+        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id])->orderBy('order');
         if ($asQuery) {
             return $files;
         }
         return $files->all();
     }
 
-    private function _getModelName()
+    private function _getModelName($full = false)
     {
         $fullClass = get_class($this->owner);
+        if ($full) {
+            return $fullClass;
+        }
         $classExplode = explode('\\', $fullClass);
         return array_pop($classExplode);
     }

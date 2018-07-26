@@ -25,6 +25,8 @@ use yii\db\ActiveRecord;
  */
 class Files extends ActiveRecord
 {
+    public $fullModelName;
+
     /**
      * @inheritdoc
      */
@@ -60,10 +62,10 @@ class Files extends ActiveRecord
 
     public function attributes()
     {
-        return array_merge(parent::attributes(),[
+        return array_merge(parent::attributes(), [
             'url',
             'trueUrl',
-			'sizes'
+            'sizes'
         ]);
     }
 
@@ -107,15 +109,15 @@ class Files extends ActiveRecord
     public function delete()
     {
         $sizes = $this->getSizes(true);
-		foreach ($sizes as $size) {
-			if (file_exists($size['path'])) {
-				unlink($size['path']);
-			}
-		}
-	
-        $path = Yii::getAlias("@webroot/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag);
-        if (file_exists($path."/".$this->filename)) {
-            unlink($path."/".$this->filename);
+        foreach ($sizes as $size) {
+            if (file_exists($size['path'])) {
+                unlink($size['path']);
+            }
+        }
+
+        $path = Yii::getAlias("@webroot/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag);
+        if (file_exists($path . "/" . $this->filename)) {
+            unlink($path . "/" . $this->filename);
             if ($this->_is_empty_dir($path)) {
                 rmdir($path);
             }
@@ -176,45 +178,66 @@ class Files extends ActiveRecord
 
     public function afterFind()
     {
-        $this->url = Yii::getAlias("@web/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag."/".$this->filename);
-        $this->trueUrl = Url::to([Yii::getAlias("@web/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag."/".$this->filename)], true);
-		
-		$sizes = $this->getSizes();
-		if ($sizes) {
-			$this->sizes = $sizes;
-		}
-		
+        $this->url = Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename);
+        $this->trueUrl = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename)], true);
+
+        $sizes = $this->getSizes();
+        if ($sizes) {
+            $this->sizes = $sizes;
+        }
+
         parent::afterFind();
     }
-	
-	public function getSizes($withFullPath = false)
-	{
-		$result = array();
-		$path = Yii::getAlias("@web/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag."/");
-		$truePath = Url::to([Yii::getAlias("@web/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag."/")], true);
-		if ($withFullPath) {
-			$fullPath = Yii::getAlias("@webroot/uploads/attachments/".$this->model_name."/".$this->model_id."/".$this->tag."/");
-		}
-		$exFilename = explode('.', $this->filename);
-		$module = Yii::$app->getModule('filesAttacher');
-		if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
-			foreach ($module->parameters['imageResize'] as $key => $size) {
-				$width = isset($size['width']) ? $size['width'] : null;
-				$height = isset($size['height']) ? $size['height'] : null;
-				$fileName = $exFilename[0] . '-' . $width . 'x' . $height . '.' . $exFilename[1];
-				if ($width || $height) {
-					$result[$key] = [
-						'url' => $path . $fileName,
-						'trueUrl' => $truePath . $fileName,
-						'width' => $width,
-						'height' => $height,
-					];
-					if ($withFullPath) {
-						$result[$key]['path'] = $fullPath . $fileName;
-					}
-				}
-			}
-		}
-		return $result;
-	}
+
+    public function getSizes($withFullPath = false)
+    {
+        $result = array();
+        $path = Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
+        $truePath = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/")], true);
+        if ($withFullPath) {
+            $fullPath = Yii::getAlias("@webroot/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
+        }
+        $exFilename = explode('.', $this->filename);
+        $module = Yii::$app->getModule('filesAttacher');
+        $sizesNameBy = isset($module->parameters['sizesNameBy']) ? $module->parameters['sizesNameBy'] : 'size';
+        if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
+            foreach ($module->parameters['imageResize'] as $key => $size) {
+                if (
+                    ((isset($size['model']) && !empty($size['model'])) && ((is_array($size['model']) && in_array($this->fullModelName, $size['model'])) || (is_string($size['model']) && $this->fullModelName == $size['model'])))
+                    || (!isset($size['model']) || empty($size['model']))
+                ) {
+                    $width = isset($size['width']) ? $size['width'] : null;
+                    $height = isset($size['height']) ? $size['height'] : null;
+
+                    switch ($sizesNameBy) {
+                        case 'key':
+                            $fileName = $exFilename[0] . '-' . $key . '.' . $exFilename[1];
+                            break;
+                        case 'template':
+                            $template = $module->parameters['sizesNameTemplate'];
+                            $nameSize = $width . 'x' . $height;
+                            $template = preg_replace('/%s/u', $nameSize, $template);
+                            $template = preg_replace('/%k/u', $key, $template);
+                            $fileName = $exFilename[0] . '-' . $template . '.' . $exFilename[1];
+                            break;
+                        default:
+                            $fileName = $exFilename[0] . '-' . $width . 'x' . $height . '.' . $exFilename[1];
+                    }
+
+                    if ($width || $height) {
+                        $result[$key] = [
+                            'url' => $path . $fileName,
+                            'trueUrl' => $truePath . $fileName,
+                            'width' => $width,
+                            'height' => $height,
+                        ];
+                        if ($withFullPath) {
+                            $result[$key]['path'] = $fullPath . $fileName;
+                        }
+                    }
+                }
+            }
+        }
+        return $result;
+    }
 }
