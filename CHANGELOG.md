@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.4
+
+Fix bug with sizes deletion
+
 ## 1.1.3
 
 Now we can change sizes name pattern, specify model for sizes, resize original image and choose driver for process images.

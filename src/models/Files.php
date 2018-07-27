@@ -108,13 +108,6 @@ class Files extends ActiveRecord
      */
     public function delete()
     {
-        $sizes = $this->getSizes(true);
-        foreach ($sizes as $size) {
-            if (file_exists($size['path'])) {
-                unlink($size['path']);
-            }
-        }
-
         $path = Yii::getAlias("@webroot/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag);
         if (file_exists($path . "/" . $this->filename)) {
             unlink($path . "/" . $this->filename);
@@ -122,6 +115,15 @@ class Files extends ActiveRecord
                 rmdir($path);
             }
         }
+
+        $sizes = glob($path . '/' . preg_replace('/(\.[^\.]*$)/ui', "*\$1", $this->filename));
+
+        if ($sizes) {
+            foreach ($sizes as $size) {
+                unlink($size);
+            }
+        }
+
         parent::delete();
     }
 
