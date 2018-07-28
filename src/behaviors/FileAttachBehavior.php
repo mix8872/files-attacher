@@ -167,11 +167,8 @@ class FileAttachBehavior extends Behavior
 
     public function getFiles($tag, $asQuery = false)
     {
-        // $class = explode('\\',$this->owner->className());
-        // $class = $class[sizeof($class)-1];
-        $filesModel = new Files();
-        $filesModel->fullModelName = $this->_getModelName(1);
-        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
+        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
+        $files = Files::find()->select(['{{files}}.*', '("'.$fullModelName.'") as fullModelName'])->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
         if ($asQuery) {
             return $files;
         }

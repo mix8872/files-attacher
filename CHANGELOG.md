@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+
+Fix bug with FilesAttach behavior
+
 ## 1.1.4
 
 Fix bug with sizes deletion
