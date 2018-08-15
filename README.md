@@ -64,11 +64,18 @@ Common:
 ```
 
 In config you may define access control to prevent access to the administrative part of the module.
+***
 Also you can define imageResize to create additional sizes for uploaded images.
+***
 In imageResize definitions, also you can optionally define model for which scaling will be applied. Support definition several models as array.
+***
 To use sizes names template you may define sizesNameTemplate option, where %k - key, %s - size. By default - %s;
+***
 If origResize option defined original image size will be changed. Also you can define models array;
+***
 Also you can change image driver to imagick.
+***
+By define filesNameBy option you may change files naming style from random string to translit file name.
 	
 Usage
 -----

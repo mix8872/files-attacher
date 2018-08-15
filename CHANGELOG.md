@@ -1,4 +1,8 @@
 # Changelog
+## 1.2.1
+
+README updated.
+
 ## 1.2.0
 
 New options added!
