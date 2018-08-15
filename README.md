@@ -48,17 +48,27 @@ Common:
 			]
 		],
 		'parameters' => [
-			'imageResize' => [
-				'galleryPreview' => ['width' => '120', 'height' => '80']
-			]
-		],
+            'imageResize' => [
+                'galleryMiddle' => ['width' => '880', 'height' => '587', 'model' => ['common\modules\imageslider\models\ImageSlider']],
+                'galleryPreview' => ['width' => '120', 'height' => '60', 'model' => ['common\modules\imageslider\models\ImageSlider']]
+            ],
+            'sizesNameBy' => 'template', // or 'key', optionally, default 'size'
+            'sizesNameTemplate' => '_resize_%k-%s', //optionally, if sizesNameBy set to 'template'
+            'origResize' => ['width' => '1024', 'height' => '768', 'model' => ['common\modules\imageslider\models\ImageSlider']], //optionally
+            'imgProcessDriver' => 'imagick', //or 'imagick', optionally, default 'gd',
+            'filesNameBy' => 'translit' // optionally, by default naming is random string
+        ],
 	],
 	// ... other modules definition
 ],
 ```
 
 In config you may define access control to prevent access to the administrative part of the module.
-Also you can define image sizes to resize uploaded images.
+Also you can define imageResize to create additional sizes for uploaded images.
+In imageResize definitions, also you can optionally define model for which scaling will be applied. Support definition several models as array.
+To use sizes names template you may define sizesNameTemplate option, where %k - key, %s - size. By default - %s;
+If origResize option defined original image size will be changed. Also you can define models array;
+Also you can change image driver to imagick.
 	
 Usage
 -----

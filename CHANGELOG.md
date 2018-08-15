@@ -1,4 +1,12 @@
 # Changelog
+## 1.2.0
+
+New options added!
+Added models definition in origResize option.
+Added filesNameBy option.
+Set default values.
+Updated README.
+Some refactoring has been done.
 
 ## 1.1.5
 

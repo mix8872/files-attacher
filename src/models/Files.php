@@ -204,9 +204,13 @@ class Files extends ActiveRecord
         $sizesNameBy = isset($module->parameters['sizesNameBy']) ? $module->parameters['sizesNameBy'] : 'size';
         if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
             foreach ($module->parameters['imageResize'] as $key => $size) {
-                if (
-                    ((isset($size['model']) && !empty($size['model'])) && ((is_array($size['model']) && in_array($this->fullModelName, $size['model'])) || (is_string($size['model']) && $this->fullModelName == $size['model'])))
-                    || (!isset($size['model']) || empty($size['model']))
+                if ((!isset($size['model']) || empty($size['model']))
+                    || ((isset($size['model']) && !empty($size['model']))
+                        && (
+                            (is_array($size['model']) && in_array($this->fullModelName, $size['model']))
+                            || (is_string($size['model']) && $this->fullModelName == $size['model'])
+                        )
+                    )
                 ) {
                     $width = isset($size['width']) ? $size['width'] : null;
                     $height = isset($size['height']) ? $size['height'] : null;
