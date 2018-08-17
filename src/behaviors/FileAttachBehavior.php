@@ -10,19 +10,28 @@ namespace mix8872\filesAttacher\behaviors;
 
 use Yii;
 use mix8872\filesAttacher\models\Files;
-use yii\base\Behavior;
 use yii\db\ActiveRecord;
 use yii\base\InvalidConfigException;
 use yii\web\UploadedFile;
 use yii\base\Security;
 use mix8872\filesAttacher\helpers\Translit;
 
-class FileAttachBehavior extends Behavior
+class FileAttachBehavior extends \yii\base\Behavior
 {
     public $tags;
     public $deleteOld;
     private $fullModelName;
+    private $filePath;
+    private $module;
 
+    public function __construct()
+    {
+        $this->module = Yii::$app->getModule('filesAttacher');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function events()
     {
         return [
@@ -32,10 +41,15 @@ class FileAttachBehavior extends Behavior
         ];
     }
 
+    /**
+     * @param $event
+     * @return bool
+     * @throws \Throwable
+     * @throws \yii\base\Exception
+     * @throws \yii\db\StaleObjectException
+     */
     public function saveAttachments($event)
     {
-        // $class = explode('\\',$this->owner->className());
-        // $class = $class[sizeof($class)-1];
         $this->fullModelName = $this->_getModelName(1);
         $class = $this->_getModelName();
         $model_id = $this->owner->id;
@@ -56,121 +70,131 @@ class FileAttachBehavior extends Behavior
                     }
                 }
 
-                $path = Yii::getAlias("@webroot/uploads/attachments/" . $class . "/" . $model_id . "/" . $tag);
+                $path = Yii::getAlias('@webroot' . $this->module->parameters['savePath'] . $class . "/" . $model_id . "/" . $tag);
                 if (!is_dir($path)) {
                     mkdir($path, 0755, true);
                 }
 
                 foreach ($attachments as $file) {
+                    $filename = $this->_getFileName($file->baseName, $path, $file->extension);
+                    $this->filePath = $path . "/" . $filename . "." . $file->extension;
 
-                    $type = $file->type;
-                    $extension = $file->extension;
+                    if (preg_match("/^image\/.+$/i", $file->type) && $file->saveAs($this->filePath)) {
 
-                    $filename = $this->_getFileName($file->baseName, $path, $extension);
-
-
-                    $filePath = $path . "/" . $filename . "." . $extension;
-
-                    if (preg_match("/^image\/.+$/i", $type) && $file->saveAs($filePath)) {
-                        $module = Yii::$app->getModule('filesAttacher');
-                        $origResize = $module->parameters['origResize'];
-                        if (
-                            (isset($origResize)
-                                && is_array($origResize)
-                                && (isset($origResize['width'])
-                                    || isset($origResize['height'])
-                                )
-                            )
-                            && (!isset($origResize['model'])
-                                || (
-                                    (is_array($origResize['model']) && in_array($this->fullModelName, $origResize['model']))
-                                    || (is_string($origResize['model']) && $this->fullModelName == $origResize['model'])
-
-                                )
-                            )
-                        ) {
-                            $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
-                            $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
-                            $this->_saveSize($path, $filename, $extension, $resWidth, $resHeight, $filePath);
+                        if (isset($this->module->parameters['origResize'])) {
+                            $origResize = $this->module->parameters['origResize'];
+                            if ($this->_checkOrigResizeArray($origResize)) {
+                                $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
+                                $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
+                                $this->_saveSize($this->filePath, $resWidth, $resHeight, $this->filePath);
+                            } elseif (is_array($origResize)) {
+                                foreach ($origResize as $size) {
+                                    if ($this->_checkOrigResizeArray($size)) {
+                                        $resWidth = isset($size['width']) ? $size['width'] : null;
+                                        $resHeight = isset($size['width']) ? $size['height'] : null;
+                                        $this->_saveSize($this->filePath, $resWidth, $resHeight, $this->filePath);
+                                        break;
+                                    }
+                                }
+                            }
                         }
-
-                        $model = new Files();
-                        $model->model_id = $model_id;
-                        $model->model_name = $class;
-                        $model->name = $file->baseName;
-                        $model->filename = $filename . "." . $extension;
-                        $model->mime_type = $type;
-                        $model->tag = $tag;
-                        $model->size = $file->size;
-                        $model->user_id = Yii::$app->user->getId();
-                        $model->fullModelName = $this->fullModelName;
-
-                        foreach ($model->getSizes(true) as $size) {
-                            $this->_saveSize($path, $filename, $extension, $size['width'], $size['height'], $size['path']);
-                        }
-
-                        if ($model->save()) {
-//                            error_log("FILE SAVED SUCCESSFULL");
-                        } else {
-                            $errors = $model->getErrors();
-                            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
-                        }
-
-                    } elseif ($file->saveAs($path . "/" . $filename . "." . $extension)) {
-                        $model = new Files();
-                        $model->model_id = $model_id;
-                        $model->model_name = $class;
-                        $model->name = $file->baseName;
-                        $model->filename = $filename . "." . $extension;
-                        $model->mime_type = $type;
-                        $model->tag = $tag;
-                        $model->size = $file->size;
-                        $model->user_id = Yii::$app->user->getId();
-                        if ($model->save()) {
-//                            error_log("FILE SAVED SUCCESSFULL");
-                        } else {
-                            $errors = $model->getErrors();
-                            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
-                        }
+                        return $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
+                    } elseif ($file->saveAs($this->filePath)) {
+                        return $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
                     } else {
-                        error_log("FILE SAVE ERROR");
+                        error_log("FILE SAVE ERROR: " . $file->baseName);
                     }
                 }
             } else {
 //                error_log("IS NO ATTACHMENTS FOR THIS TAG: ".$tag);
             }
         }
-
-        return null;
+        return false;
     }
 
     /**
-     * @param $dir - Path to model upload dir
-     * @param $filename - Generated filename
-     * @param $extension - File extension
+     * @param $model_id
+     * @param $class
+     * @param $file
+     * @param $filename
+     * @param $tag
+     * @param bool $isImage
+     * @return bool
+     */
+    private function _saveAttachment($model_id, $class, $file, $filename, $tag, $isImage = false)
+    {
+        $model = new Files();
+        $model->model_id = $model_id;
+        $model->model_name = $class;
+        $model->name = $file->baseName;
+        $model->filename = $filename . "." . $file->extension;
+        $model->mime_type = $file->type;
+        $model->tag = $tag;
+        $model->size = $file->size;
+        $model->user_id = Yii::$app->user->getId();
+        $model->fullModelName = $this->fullModelName;
+
+        if ($isImage) {
+            foreach ($model->getSizes(true) as $size) {
+                $this->_saveSize($this->filePath, $size['width'], $size['height'], $size['path']);
+            }
+        }
+
+        if ($result = $model->save()) {
+//          error_log("FILE SAVED SUCCESSFULL");
+            return $result;
+        } else {
+            $errors = $model->getErrors();
+            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
+        }
+        return false;
+    }
+
+    /**
+     * @param $origResize
+     * @return bool
+     */
+    private function _checkOrigResizeArray($origResize)
+    {
+        return (isset($origResize)
+                && is_array($origResize)
+                && (isset($origResize['width'])
+                    || isset($origResize['height'])
+                )
+            )
+            && Files::checkSizeModel($origResize, $this->fullModelName);
+    }
+
+    /**
+     * @param $origPath
      * @param $width - Resize width
      * @param $height - Resize height
      * @param $path - Save full path
      * @return \Intervention\Image\Image
      */
-    private function _saveSize($dir, $filename, $extension, $width, $height, $path)
+    private function _saveSize($origPath, $width, $height, $path)
     {
-        if (isset($width) || isset($height)) {
-            $module = Yii::$app->getModule('filesAttacher');
-            $driver = $module->parameters['imgProcessDriver'];
+        if ($width || $height) {
+            $driver = $this->module->parameters['imgProcessDriver'];
             $manager = new \Intervention\Image\ImageManager(['driver' => $driver]);
-            return $manager->make($dir . "/" . $filename . "." . $extension)->resize($width, $height, function ($constraint) {
+            return $manager->make($origPath)->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->save($path);
         }
     }
 
+    /**
+     * @param $name
+     * @param $path
+     * @param $extension
+     * @return mixed|null|string|string[]
+     * @throws \yii\base\Exception
+     */
     private function _getFileName($name, $path, $extension)
     {
-        $module = Yii::$app->getModule('filesAttacher');
-        $fileNameBy = $module->parameters['filesNameBy'];
-        if ((is_string($fileNameBy) && $fileNameBy == 'translit')
+        $fileNameBy = $this->module->parameters['filesNameBy'];
+        if ($fileNameBy === 'translit'
             || ((is_array($fileNameBy)
                     && isset($fileNameBy[0])
                     && $fileNameBy[0] === 'translit'
@@ -199,6 +223,9 @@ class FileAttachBehavior extends Behavior
         return $filename;
     }
 
+    /**
+     * Delete all attachments of current model
+     */
     public function deleteAllAttachments()
     {
         $files = Files::findAll(['model_id' => $this->owner->id]);
@@ -208,6 +235,11 @@ class FileAttachBehavior extends Behavior
         }
     }
 
+    /**
+     * @param $tag
+     * @param bool $asQuery
+     * @return array|\yii\db\ActiveQuery|ActiveRecord[]
+     */
     public function getFiles($tag, $asQuery = false)
     {
         $fullModelName = str_replace('\\', '\\\\', $this->fullModelName);
@@ -218,6 +250,10 @@ class FileAttachBehavior extends Behavior
         return $files->all();
     }
 
+    /**
+     * @param bool $asQuery
+     * @return array|\yii\db\ActiveQuery|ActiveRecord[]
+     */
     public function getAllFiles($asQuery = false)
     {
         $filesModel = new Files();
@@ -229,6 +265,10 @@ class FileAttachBehavior extends Behavior
         return $files->all();
     }
 
+    /**
+     * @param bool $full
+     * @return mixed|string
+     */
     private function _getModelName($full = false)
     {
         $fullClass = get_class($this->owner);

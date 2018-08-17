@@ -26,6 +26,9 @@ use yii\db\ActiveRecord;
 class Files extends ActiveRecord
 {
     public $fullModelName;
+    private $module;
+    private $webPath;
+    private $webrootPath;
 
     /**
      * @inheritdoc
@@ -35,9 +38,16 @@ class Files extends ActiveRecord
         return 'files';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
+
+        $this->module = Yii::$app->getModule('filesAttacher');
+        $this->webPath = '@web' . $this->module->parameters['savePath'];
+        $this->webrootPath = '@webroot' . $this->module->parameters['savePath'];
 
         Yii::$app->i18n->translations['files'] = [
             'class' => 'yii\i18n\PhpMessageSource',
@@ -46,6 +56,9 @@ class Files extends ActiveRecord
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function behaviors()
     {
         parent::behaviors();
@@ -60,6 +73,9 @@ class Files extends ActiveRecord
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function attributes()
     {
         return array_merge(parent::attributes(), [
@@ -86,7 +102,6 @@ class Files extends ActiveRecord
      */
     public function attributeLabels()
     {
-        $a = 1;
         return [
             'id' => 'ID',
             'model_id' => Yii::t('files', 'ID модели'),
@@ -108,7 +123,7 @@ class Files extends ActiveRecord
      */
     public function delete()
     {
-        $path = Yii::getAlias("@webroot/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag);
+        $path = Yii::getAlias($this->webrootPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag);
         if (file_exists($path . "/" . $this->filename)) {
             unlink($path . "/" . $this->filename);
             if ($this->_is_empty_dir($path)) {
@@ -178,9 +193,12 @@ class Files extends ActiveRecord
         return $rtrn;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function afterFind()
     {
-        $this->url = Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename);
+        $this->url = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename);
         $this->trueUrl = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename)], true);
 
         $sizes = $this->getSizes();
@@ -191,26 +209,25 @@ class Files extends ActiveRecord
         parent::afterFind();
     }
 
+    /**
+     * @param bool $withFullPath - if true then add to result absolute path to the file
+     * @return array
+     */
     public function getSizes($withFullPath = false)
     {
         $result = array();
-        $path = Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
-        $truePath = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/")], true);
+        $path = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
+        $truePath = Url::to([Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/")], true);
         if ($withFullPath) {
-            $fullPath = Yii::getAlias("@webroot/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
+            $fullPath = Yii::getAlias($this->webrootPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
         }
         $exFilename = explode('.', $this->filename);
         $module = Yii::$app->getModule('filesAttacher');
-        $sizesNameBy = isset($module->parameters['sizesNameBy']) ? $module->parameters['sizesNameBy'] : 'size';
+        $sizesNameBy = $module->parameters['sizesNameBy'];
         if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
             foreach ($module->parameters['imageResize'] as $key => $size) {
                 if ((!isset($size['model']) || empty($size['model']))
-                    || ((isset($size['model']) && !empty($size['model']))
-                        && (
-                            (is_array($size['model']) && in_array($this->fullModelName, $size['model']))
-                            || (is_string($size['model']) && $this->fullModelName == $size['model'])
-                        )
-                    )
+                    || self::checkSizeModel($size, $this->fullModelName)
                 ) {
                     $width = isset($size['width']) ? $size['width'] : null;
                     $height = isset($size['height']) ? $size['height'] : null;
@@ -226,6 +243,7 @@ class Files extends ActiveRecord
                             $template = preg_replace('/%k/u', $key, $template);
                             $fileName = $exFilename[0] . '-' . $template . '.' . $exFilename[1];
                             break;
+                        case 'size':
                         default:
                             $fileName = $exFilename[0] . '-' . $width . 'x' . $height . '.' . $exFilename[1];
                     }
@@ -245,5 +263,21 @@ class Files extends ActiveRecord
             }
         }
         return $result;
+    }
+
+    /**
+     * Check for existing current model in sizes array
+     * @param $size
+     * @param $fullModelName
+     * @return bool
+     */
+    public static function checkSizeModel($size, $fullModelName)
+    {
+        return (!empty($size['model'])
+            && (
+                (is_array($size['model']) && in_array($fullModelName, $size['model']))
+                || (is_string($size['model']) && $fullModelName == $size['model'])
+            )
+        );
     }
 }

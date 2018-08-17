@@ -13,6 +13,7 @@ class Module extends \yii\base\Module
     public $parameters;
 
     // defaults
+    const SAVE_PATH = '/uploads/attachments/';
     const FILES_NAME_BY = 'random';
     const IMG_PROCESS_DRIVER = 'gd';
     const SIZES_NAME_BY = 'size';
@@ -28,20 +29,51 @@ class Module extends \yii\base\Module
         $this->setViewPath('@vendor/mix8872/files-attacher/src/views');
         $this->registerTranslations();
 
+        if (!isset($this->parameters['savePath'])) {
+            $this->parameters['savePath'] = self::SAVE_PATH;
+        } else {
+            if (is_string($this->parameters['savePath'])) {
+                if (substr($this->parameters['savePath'], -1) != '/') {
+                    $this->parameters['savePath'] = $this->parameters['savePath'] . '/';
+                }
+                if ($this->parameters['savePath']{0} != '/') {
+                    $this->parameters['savePath'] = '/' . $this->parameters['savePath'];
+                }
+            } else {
+                return new InvalidConfigException('Parameter "savePath" must be a string!');
+            }
+        }
+
         if (!isset($this->parameters['filesNameBy'])) {
             $this->parameters['filesNameBy'] = self::FILES_NAME_BY;
+        } else {
+            if (!is_string($this->parameters['filesNameBy'])) {
+                return new InvalidConfigException('Parameter "filesNameBy" must be a string!');
+            }
         }
 
         if (!isset($this->parameters['imgProcessDriver'])) {
             $this->parameters['imgProcessDriver'] = self::IMG_PROCESS_DRIVER;
+        } else {
+            if (!is_string($this->parameters['imgProcessDriver'])) {
+                return new InvalidConfigException('Parameter "imgProcessDriver" must be a string!');
+            }
         }
 
         if (!isset($this->parameters['sizesNameBy'])) {
             $this->parameters['sizesNameBy'] = self::SIZES_NAME_BY;
+        } else {
+            if (!is_string($this->parameters['sizesNameBy'])) {
+                return new InvalidConfigException('Parameter "sizesNameBy" must be a string!');
+            }
         }
 
         if (!isset($this->parameters['sizesNameTemplate'])) {
             $this->parameters['sizesNameTemplate'] = self::SIZES_NAME_TEMPLATE;
+        } else {
+            if (!is_string($this->parameters['sizesNameTemplate'])) {
+                return new InvalidConfigException('Parameter "sizesNameTemplate" must be a string!');
+            }
         }
 
         if ($this->parameters['sizesNameBy'] === 'template'

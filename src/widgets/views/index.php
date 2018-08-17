@@ -72,7 +72,7 @@ $uniqueName = $security->generateRandomString(10);
                             </td>
                         <?php endif; ?>
                         <td>
-                            <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/admin/files/delete', 'id' => $files[0]->id], [
+                            <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $files[0]->id], [
                                 'class' => 'delete-attachment-file',
                             ]) ?>
                         </td>
