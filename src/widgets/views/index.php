@@ -82,7 +82,7 @@ $uniqueName = $security->generateRandomString(10);
         endif; ?>
         <?php if ($list && $multiple): ?>
             <?= SortableGridView::widget([
-                'dataProvider' => new ActiveDataProvider(['query' => $model->getFiles($tag, 1),]),
+                'dataProvider' => new ActiveDataProvider(['query' => $model->getFiles($tag, 0, 1),]),
                 'rowOptions' => function ($model) {
                     return ['id' => $model->id];
                 },

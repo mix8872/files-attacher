@@ -1,4 +1,8 @@
 # Changelog
+## 1.2.6
+
+Fix bug in files widget when used multiple loading
+
 ## 1.2.5
 
 Roll back to 1.2.2
