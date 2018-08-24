@@ -20,11 +20,11 @@ class Module extends \yii\base\Module
     const SIZES_NAME_TEMPLATE = '%s';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function init()
+    public function __construct()
     {
-        parent::init();
+        parent::__construct('files-attacher');
         $this->controllerNamespace = 'mix8872\filesAttacher\controllers';
         $this->setViewPath('@vendor/mix8872/files-attacher/src/views');
         $this->registerTranslations();
