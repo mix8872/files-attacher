@@ -1,4 +1,12 @@
 # Changelog
+## 1.2.4
+
+Fix bug in module class constructor
+
+## 1.2.3
+
+Changed init() to __construct() in module class
+
 ## 1.2.2
 
 Fixed some bugs.
