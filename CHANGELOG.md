@@ -1,4 +1,8 @@
 # Changelog
+## 1.2.5
+
+Roll back to 1.2.2
+
 ## 1.2.4
 
 Fix bug in module class constructor

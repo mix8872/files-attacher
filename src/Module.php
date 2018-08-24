@@ -24,7 +24,7 @@ class Module extends \yii\base\Module
      */
     public function __construct()
     {
-        parent::__construct('filesAttacher');
+        parent::__construct('files-attacher');
         $this->controllerNamespace = 'mix8872\filesAttacher\controllers';
         $this->setViewPath('@vendor/mix8872/files-attacher/src/views');
         $this->registerTranslations();
