@@ -22,9 +22,9 @@ class Module extends \yii\base\Module
     /**
      * {@inheritdoc}
      */
-    public function __construct()
+    public function init()
     {
-        parent::__construct('files-attacher');
+        parent::init();
         $this->controllerNamespace = 'mix8872\filesAttacher\controllers';
         $this->setViewPath('@vendor/mix8872/files-attacher/src/views');
         $this->registerTranslations();

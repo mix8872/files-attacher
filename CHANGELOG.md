@@ -1,4 +1,8 @@
 # Changelog
+## 1.2.7
+
+Fix module bug.
+
 ## 1.2.6
 
 Fix bug in files widget when used multiple loading
