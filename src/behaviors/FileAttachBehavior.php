@@ -23,10 +23,13 @@ class FileAttachBehavior extends \yii\base\Behavior
     private $fullModelName;
     private $filePath;
     private $module;
+    private $manager;
 
     public function __construct()
     {
         $this->module = Yii::$app->getModule('filesAttacher');
+        $driver = $this->module->parameters['imgProcessDriver'];
+        $this->manager = new \Intervention\Image\ImageManager(['driver' => $driver]);
     }
 
     /**
@@ -78,9 +81,8 @@ class FileAttachBehavior extends \yii\base\Behavior
                 foreach ($attachments as $file) {
                     $filename = $this->_getFileName($file->baseName, $path, $file->extension);
                     $this->filePath = $path . "/" . $filename . "." . $file->extension;
-
-                    if (preg_match("/^image\/.+$/i", $file->type) && $file->saveAs($this->filePath)) {
-
+                    
+                    if (preg_match("/^image\/.+$/i", $file->type) && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
                         if (isset($this->module->parameters['origResize'])) {
                             $origResize = $this->module->parameters['origResize'];
                             if ($this->_checkOrigResizeArray($origResize)) {
@@ -92,17 +94,21 @@ class FileAttachBehavior extends \yii\base\Behavior
                                     if ($this->_checkOrigResizeArray($size)) {
                                         $resWidth = isset($size['width']) ? $size['width'] : null;
                                         $resHeight = isset($size['width']) ? $size['height'] : null;
-                                        $this->_saveSize($this->filePath, $resWidth, $resHeight, $this->filePath);
+                                        $this->_saveSize($resWidth, $resHeight, $this->filePath);
                                         break;
                                     }
                                 }
                             }
                         }
-                        return $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
+                        $result =  $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
                     } elseif ($file->saveAs($this->filePath)) {
-                        return $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
+                        $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
                     } else {
                         error_log("FILE SAVE ERROR: " . $file->baseName);
+                    }
+                    if (!$result) {
+                        error_log("FILE SAVE ERROR: " . $file->baseName . PHP_EOL . $result);
+                        return $result;
                     }
                 }
             } else {
@@ -136,7 +142,7 @@ class FileAttachBehavior extends \yii\base\Behavior
 
         if ($isImage) {
             foreach ($model->getSizes(true) as $size) {
-                $this->_saveSize($this->filePath, $size['width'], $size['height'], $size['path']);
+                $this->_saveSize($size['width'], $size['height'], $size['path']);
             }
         }
 
@@ -172,12 +178,10 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param $path - Save full path
      * @return \Intervention\Image\Image
      */
-    private function _saveSize($origPath, $width, $height, $path)
+    private function _saveSize($width, $height, $path)
     {
         if ($width || $height) {
-            $driver = $this->module->parameters['imgProcessDriver'];
-            $manager = new \Intervention\Image\ImageManager(['driver' => $driver]);
-            return $manager->make($origPath)->resize($width, $height, function ($constraint) {
+            return $this->manager->make($this->filePath)->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->save($path);

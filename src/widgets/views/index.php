@@ -112,14 +112,13 @@ $uniqueName = $security->generateRandomString(10);
                                     ['width' => '150px', 'controls' => true]
                                 );
                             } else {
-                                return Html::a(Yii::t('admin', 'Preview'), [$model->url], ['tagret' => '_blank']);
+                                return Html::a(Yii::t('files', 'Preview'), [$model->url], ['tagret' => '_blank']);
                             }
                         }
                     ],
                     [
-                        'attribute' => 'description',
                         'format' => 'raw',
-                        'value' => function($model) {
+                        'value' => function ($model) {
                             return Html::tag('div', $model->description, ['class' => 'file_name'])
                                 . Html::tag('div', Html::activeInput('text', $model, 'description'), ['class' => 'file_hidden-input']);
                         }

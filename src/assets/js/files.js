@@ -9,7 +9,8 @@
                 method: 'post',
                 success: function(response){
                     that.closest('tr').remove();
-                }
+                    return false;
+                },
             });
         }
     });

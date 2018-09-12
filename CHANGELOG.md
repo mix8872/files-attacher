@@ -1,4 +1,9 @@
 # Changelog
+## 1.2.8
+
+Added based on the exif automatic images orientation;
+Fixed bug with multiple files upload
+
 ## 1.2.7
 
 Fix module bug.
