@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.10
+
+Critical migration and db changes. Recommend to fully reinstall module!
+
 ## 1.2.9
 
 Ttitle attribute was added.

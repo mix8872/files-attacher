@@ -2,7 +2,7 @@
 
 use yii\db\Migration;
 
-class m180912_174505_add_files_content_table extends Migration
+class m180912_174505_add_file_content_table extends Migration
 {
     public function safeUp()
     {

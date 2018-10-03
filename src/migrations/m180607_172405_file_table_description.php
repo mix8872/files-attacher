@@ -2,16 +2,16 @@
 
 use yii\db\Migration;
 
-class m180607_172405_files_table_description extends Migration
+class m180607_172405_file_table_description extends Migration
 {
     public function safeUp()
     {
-        $this->addColumn('{{%files}}', 'description', $this->string(255));
+        $this->addColumn('{{%file}}', 'description', $this->string(255));
     }
 
     public function safeDown()
     {
-        $this->dropColumn('{{%files}}', 'description');
+        $this->dropColumn('{{%file}}', 'description');
     }
 
     /*
