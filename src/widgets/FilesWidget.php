@@ -20,6 +20,7 @@ class FilesWidget extends Widget
     public $multiple = false;
     public $filetypes;
     public $n = null;
+    public $title;
 
     public function init()
     {
@@ -58,6 +59,7 @@ class FilesWidget extends Widget
             'filetypes' => $filetypes,
             'multiple' => $this->multiple,
             'list' => $this->list,
+            'title' => $this->title,
             'n' => $this->n
         ]);
     }

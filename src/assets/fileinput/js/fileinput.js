@@ -1388,7 +1388,7 @@
             e.preventDefault();
         },
         _zoneDragEnter: function (e) {
-            var self = this, hasFiles = $.inArray('Files', e.originalEvent.dataTransfer.types) > -1;
+            var self = this, hasFiles = $.inArray('File', e.originalEvent.dataTransfer.types) > -1;
             self._zoneDragDropInit(e);
             if (self.isDisabled || !hasFiles) {
                 e.originalEvent.dataTransfer.effectAllowed = 'none';

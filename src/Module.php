@@ -6,7 +6,7 @@ use yii\filters\AccessControl;
 use yii\base\InvalidConfigException;
 
 /**
- * Files module.
+ * File module.
  */
 class Module extends \yii\base\Module
 {

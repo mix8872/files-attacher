@@ -2,11 +2,12 @@
 
 namespace mix8872\filesAttacher\controllers;
 
+use mix8872\filesAttacher\models\FileContent;
 use richardfan\sortable\SortableAction;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\VerbFilter;
-use mix8872\filesAttacher\models\Files;
+use mix8872\filesAttacher\models\File;
 
 /**
  * MenuController implements the CRUD actions for Menu model.
@@ -44,7 +45,7 @@ class DefaultController extends \yii\web\Controller
         return [
             'sort' => [
                 'class' => SortableAction::class,
-                'activeRecordClassName' => 'mix8872\filesAttacher\models\Files',
+                'activeRecordClassName' => 'mix8872\filesAttacher\models\File',
                 'orderColumn' => 'order',
             ],
         ];
@@ -57,7 +58,7 @@ class DefaultController extends \yii\web\Controller
     public function actionIndex()
     {
         $dataProvider = new ActiveDataProvider([
-            'query' => Files::find(),
+            'query' => File::find(),
         ]);
 
         return $this->render('index', [
@@ -72,28 +73,33 @@ class DefaultController extends \yii\web\Controller
      */
     public function actionCreate()
     {
-        $model = new Menu();
-		
-		if ($model->load(Yii::$app->request->post()) && $model->makeRoot()->save()) {
-			Yii::$app->getSession()->setFlash('success', 'Меню успешно создано, теперь можно добавить новые пункты меню');
-			return $this->redirect(['update', 'id' => $model->id]);
-		}
+        $model = new File();
 
 		return $this->render('create', [
 			'model' => $model,
 		]);
     }
 
+    /**
+     * @param $id
+     * @return bool
+     */
     public function actionAjaxUpdate($id)
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         if (Yii::$app->request->isAjax) {
-            $model = Files::findOne($id);
-            unset($model->url);
-            unset($model->trueUrl);
-            unset($model->sizes);
-            if ($model->load(Yii::$app->request->post()) && $model->save()) {
-                return true;
+            $content = FileContent::find()->where(['file_id' => $id])->indexBy('id')->all();
+            if (\yii\base\Model::loadMultiple($content, Yii::$app->request->post())) {
+                $result = true;
+                foreach ($content as $item) {
+                    if (!$item->save()) {
+                        error_log(print_r($item->getErrorSummary(1),1));
+                        $result = false;
+                    }
+                }
+                return $result;
+            } else {
+                return false;
             }
         }
         return false;
@@ -123,7 +129,7 @@ class DefaultController extends \yii\web\Controller
      */
     protected function findModel($id)
     {
-        if (($model = Files::findOne($id)) !== null) {
+        if (($model = File::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

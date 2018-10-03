@@ -11,7 +11,7 @@ class m171029_110953_files_table extends Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
         }
 
-        $this->createTable('{{%files}}', [
+        $this->createTable('{{%file}}', [
             'id' => $this->primaryKey(),
             'model_id' => $this->integer()->notNull(),
             'model_name' => $this->string()->notNull(),
@@ -28,7 +28,7 @@ class m171029_110953_files_table extends Migration
 
     public function safeDown()
     {
-        $this->dropTable('{{%files}}');
+        $this->dropTable('{{%file}}');
     }
 
     /*

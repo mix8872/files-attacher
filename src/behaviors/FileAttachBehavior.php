@@ -8,8 +8,9 @@
 
 namespace mix8872\filesAttacher\behaviors;
 
+use mix8872\filesAttacher\models\FileContent;
 use Yii;
-use mix8872\filesAttacher\models\Files;
+use mix8872\filesAttacher\models\File;
 use yii\db\ActiveRecord;
 use yii\base\InvalidConfigException;
 use yii\web\UploadedFile;
@@ -65,7 +66,7 @@ class FileAttachBehavior extends \yii\base\Behavior
 
             if ($attachments && !empty($attachments)) {
                 if (in_array($tag, $this->deleteOld)) {
-                    $olds = Files::find()->where(['tag' => $tag, 'model_name' => $class, 'model_id' => $model_id])->all();
+                    $olds = File::find()->where(['tag' => $tag, 'model_name' => $class, 'model_id' => $model_id])->all();
                     if (!empty($olds)) {
                         foreach ($olds as $old) {
                             $old->delete();
@@ -81,7 +82,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                 foreach ($attachments as $file) {
                     $filename = $this->_getFileName($file->baseName, $path, $file->extension);
                     $this->filePath = $path . "/" . $filename . "." . $file->extension;
-                    
+
                     if (preg_match("/^image\/.+$/i", $file->type) && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
                         if (isset($this->module->parameters['origResize'])) {
                             $origResize = $this->module->parameters['origResize'];
@@ -129,7 +130,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     private function _saveAttachment($model_id, $class, $file, $filename, $tag, $isImage = false)
     {
-        $model = new Files();
+        $model = new File();
         $model->model_id = $model_id;
         $model->model_name = $class;
         $model->name = $file->baseName;
@@ -147,13 +148,31 @@ class FileAttachBehavior extends \yii\base\Behavior
         }
 
         if ($result = $model->save()) {
-//          error_log("FILE SAVED SUCCESSFULL");
+            if ($langModule = \Yii::$app->getModule('languages')) {
+                foreach ($langModule->languages as $lang) {
+                    $this->_addContentModel($model, $lang);
+                }
+            } else {
+                $this->_addContentModel($model, \Yii::$app->language);
+            }
             return $result;
         } else {
             $errors = $model->getErrors();
             error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
         }
         return false;
+    }
+
+    /**
+     * @param $model
+     * @param $lang
+     */
+    private function _addContentModel($model, $lang)
+    {
+        $fileContent = new FileContent();
+        $fileContent->file_id = $model->id;
+        $fileContent->lang = $lang;
+        $fileContent->save();
     }
 
     /**
@@ -168,7 +187,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                     || isset($origResize['height'])
                 )
             )
-            && Files::checkSizeModel($origResize, $this->fullModelName);
+            && File::checkSizeModel($origResize, $this->fullModelName);
     }
 
     /**
@@ -232,7 +251,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function deleteAllAttachments()
     {
-        $files = Files::findAll(['model_id' => $this->owner->id]);
+        $files = File::findAll(['model_id' => $this->owner->id]);
         foreach ($files as $file) {
             $file->fullModelName = $this->fullModelName;
             $file->delete();
@@ -241,13 +260,14 @@ class FileAttachBehavior extends \yii\base\Behavior
 
     /**
      * @param $tag
+     * @param bool $single
      * @param bool $asQuery
      * @return array|\yii\db\ActiveQuery|ActiveRecord[]
      */
     public function getFiles($tag, $single = false, $asQuery = false)
     {
         $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
-        $files = Files::find()->select(['{{files}}.*', '("' . $fullModelName . '") as fullModelName'])->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
+        $files = File::find()->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
         if ($asQuery) {
             return $files;
         }
@@ -263,7 +283,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getAllFiles($asQuery = false)
     {
-        $filesModel = new Files();
+        $filesModel = new File();
         $filesModel->fullModelName = $this->_getModelName(1);
         $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id])->orderBy('order');
         if ($asQuery) {

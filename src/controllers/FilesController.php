@@ -4,7 +4,7 @@ namespace mix8872\filesAttacher\controllers;
 
 use Yii;
 use yii\filters\VerbFilter;
-use mix8872\filesAttacher\models\Files;
+use mix8872\filesAttacher\models\File;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -86,7 +86,7 @@ class FilesController extends \yii\web\Controller
      */
     protected function findModel($id)
     {
-        if (($model = Files::findOne($id)) !== null) {
+        if (($model = File::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

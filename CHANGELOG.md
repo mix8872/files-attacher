@@ -1,4 +1,9 @@
 # Changelog
+
+## 1.2.9
+
+Ttitle attribute was added.
+
 ## 1.2.8
 
 Added based on the exif automatic images orientation;

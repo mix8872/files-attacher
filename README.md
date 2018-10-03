@@ -114,6 +114,7 @@ use mix8872\filesAttacher\widgets\FilesWidget;
  
 	<?= FilesWidget::widget([
 		'model' => $model,
+		'title' => 'Video gallery', // title, optional, if not set then displays tag
 		'tag' => 'videos', // one of the tags listed in the model
 		'multiple' => true, // true or false. allow multiple loading
 		'filetypes' => ['video/*'], // array of mime types of allowed files

@@ -1,5 +1,5 @@
-(function($){
-    $(document).on('click','a.delete-attachment-file',function(e){
+(function ($) {
+    $(document).on('click', 'a.delete-attachment-file', function (e) {
         e.preventDefault();
         var that = $(this);
         var url = that.attr('href');
@@ -7,7 +7,7 @@
             $.ajax({
                 url: url,
                 method: 'post',
-                success: function(response){
+                success: function (response) {
                     that.closest('tr').remove();
                     return false;
                 },
@@ -18,44 +18,43 @@
         type: 'image',
     });
 
-    $('.js-update-attachment-description').on('click', function (e) {
+    $('.file-edit-submit').on('click', function(e){
         e.preventDefault();
-        var that = $(this);
-        var url = that.attr('href');
-        var span = $('span', this);
-        var parentRow = that.parents('.file_row');
-        var inputDiv = parentRow.find('.file_hidden-input');
-        var input = parentRow.find('input');
-        var name = parentRow.find('.file_name');
+        var $this = $(this),
+            url = $this.data('url'),
+            fields = $this.parents('.modal-content').find('input.form-control'),
+            data = {};
+        fields.each(function(key, item){
+            data[$(item).attr('name')] = $(item).val();
+        });
 
-        var data = {};
-        data[input.attr('name')] = input.val();
+        $this.removeClass('btn-primary').html('<i class="fa fa-spin fa-square"></i>');
 
-        if (that.hasClass('is-edit')) {
-            $.ajax({
-                url: url,
-                type: 'post',
-                dataType: "json",
-                data: data,
-                success: function(result) {
-                    if (result) {
-                        if (span.hasClass('glyphicon-ok')) {
-                            span.removeClass('glyphicon-ok').addClass('glyphicon-pencil');
-                        }
-                        inputDiv.hide(10);
-                        name.text(input.val()).show(10);
-                        that.removeClass('is-edit');
-                    }
+        $.ajax({
+            url: url,
+            data: data,
+            method: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                if (response) {
+                    jQuery.Notification.notify(
+                        'success',
+                        'top center',
+                        '',
+                        'Свойства файла успешно сохранены'
+                    );
+                    $this.addClass('btn-success').html('Сохранено');
+                } else {
+                    jQuery.Notification.notify(
+                        'danger',
+                        'top center',
+                        '',
+                        'Ошибка сохранения'
+                    );
+                    $this.addClass('btn-primary').html('Сохранить');
                 }
-            });
-        } else {
-            if (span.hasClass('glyphicon-pencil')) {
-                span.removeClass('glyphicon-pencil').addClass('glyphicon-ok');
             }
-            name.hide(10);
-            inputDiv.show(10);
-            that.addClass('is-edit');
-        }
-    })
+        });
+    });
 
 }(jQuery));

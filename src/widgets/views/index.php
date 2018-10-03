@@ -19,11 +19,14 @@ $uniqueName = $security->generateRandomString(10);
 ?>
 <div class="panel panel-default">
     <div class="panel-body">
-        <input type="file"
-               name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
-               id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
-               class="form-control"
-               title="Выбрать файл"/>
+        <div class="form-group">
+            <label class="control-label" for="<?= $uniqueName ?>"><?= $title ? $title : $tag ?></label>
+            <input type="file"
+                   name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
+                   id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
+                   class="form-control"
+                   title="Выбрать файл"/>
+        </div>
 
         <?php
         $this->registerJs("
