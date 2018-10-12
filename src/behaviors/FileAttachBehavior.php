@@ -83,7 +83,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                     $filename = $this->_getFileName($file->baseName, $path, $file->extension);
                     $this->filePath = $path . "/" . $filename . "." . $file->extension;
 
-                    if (preg_match("/^image\/.+$/i", $file->type) && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
+                    if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type) && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
                         if (isset($this->module->parameters['origResize'])) {
                             $origResize = $this->module->parameters['origResize'];
                             if ($this->_checkOrigResizeArray($origResize)) {
