@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.2.10
+## 1.3.1
+
+Fix bug with migrations
+
+## 1.3.0
 
 Critical migration and db changes. Recommend to fully reinstall module!
 
