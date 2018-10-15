@@ -285,7 +285,7 @@ class FileAttachBehavior extends \yii\base\Behavior
     {
         $filesModel = new File();
         $filesModel->fullModelName = $this->_getModelName(1);
-        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->id])->orderBy('order');
+        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id])->orderBy('order')->indexBy('tag');
         if ($asQuery) {
             return $files;
         }

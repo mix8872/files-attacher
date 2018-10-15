@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2
+
+Fixed allFiles method
+
 ## 1.3.1
 
 Fix bug with migrations
