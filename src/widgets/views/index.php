@@ -19,11 +19,7 @@ $security = new Security();
 $uniqueName = $security->generateRandomString(10);
 ?>
 <div class="form-group">
-    <?php if ($title): ?>
-        <label class="control-label" for="<?= $uniqueName ?>"><?= $title ?></label>
-    <?php else: ?>
-        <label class="control-label" for="<?= $uniqueName ?>"><?= $tag ?></label>
-    <?php endif; ?>
+    <label class="control-label" for="<?= $uniqueName ?>"><?= $title ? $title : $tag ?></label>
     <input type="file"
            name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
            id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
