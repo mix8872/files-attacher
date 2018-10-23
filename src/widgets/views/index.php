@@ -20,7 +20,9 @@ $uniqueName = $security->generateRandomString(10);
 ?>
 <div class="form-group">
     <?php if ($title): ?>
-        <label class="control-label" for="gallery-title"><?= $title ?></label>
+        <label class="control-label" for="<?= $uniqueName ?>"><?= $title ?></label>
+    <?php else: ?>
+        <label class="control-label" for="<?= $uniqueName ?>"><?= $tag ?></label>
     <?php endif; ?>
     <input type="file"
            name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
