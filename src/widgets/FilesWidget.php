@@ -41,7 +41,7 @@ class FilesWidget extends Widget
                     $type = explode('/', $filetype);
                     $allowedFileTypes = $this->getType($type[0]);
                     $type[1] != "*" ? $extensions[] = $type[1] : true;
-                    $filetypes = implode(',',$this->filetypes);
+                    $filetypes = implode(',', $this->filetypes);
                 }
             } else {
                 $type = explode('/', $this->filetypes);
@@ -51,6 +51,12 @@ class FilesWidget extends Widget
             }
         }
 
+        if ($langModule = \Yii::$app->getModule('languages')) {
+            $languages = $langModule->languages;
+        } else {
+            $languages = [Yii::$app->language => Yii::$app->language];
+        }
+
         return $this->render('index', [
             'model' => $this->model,
             'tag' => $this->tag,
@@ -58,6 +64,8 @@ class FilesWidget extends Widget
             'allowedFileExtensions' => json_encode($allowedFileExtensions),
             'filetypes' => $filetypes,
             'multiple' => $this->multiple,
+            'query' => $this->model->getFiles($this->tag, 0, 1),
+            'languages' => $languages,
             'list' => $this->list,
             'title' => $this->title,
             'n' => $this->n

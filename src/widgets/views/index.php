@@ -11,6 +11,7 @@ use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
 use richardfan\sortable\SortableGridView;
 use yii\base\Security;
+use yii\widgets\ActiveForm;
 
 $class = explode('\\', $model->className());
 
@@ -19,14 +20,11 @@ $uniqueName = $security->generateRandomString(10);
 ?>
 <div class="panel panel-default">
     <div class="panel-body">
-        <div class="form-group">
-            <label class="control-label" for="<?= $uniqueName ?>"><?= $title ? $title : $tag ?></label>
-            <input type="file"
-                   name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
-                   id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
-                   class="form-control"
-                   title="Выбрать файл"/>
-        </div>
+        <input type="file"
+               name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
+               id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
+               class="form-control"
+               title="Выбрать файл"/>
 
         <?php
         $this->registerJs("
@@ -46,8 +44,8 @@ $uniqueName = $security->generateRandomString(10);
                 });
             }(jQuery));
         "); ?>
-        <?php if ($list && !$multiple):
-            $files = $model->getFiles($tag);
+        <?php if (!$multiple):
+            $files = $query->one();
             if (!empty($files)): ?>
                 <table>
                     <tr>
@@ -81,11 +79,10 @@ $uniqueName = $security->generateRandomString(10);
                         </td>
                     </tr>
                 </table>
-            <?php endif;
-        endif; ?>
-        <?php if ($list && $multiple): ?>
+            <?php endif; ?>
+        <?php else : ?>
             <?= SortableGridView::widget([
-                'dataProvider' => new ActiveDataProvider(['query' => $model->getFiles($tag, 0, 1),]),
+                'dataProvider' => new ActiveDataProvider(['query' => $query]),
                 'rowOptions' => function ($model) {
                     return ['id' => $model->id];
                 },
@@ -120,24 +117,20 @@ $uniqueName = $security->generateRandomString(10);
                         }
                     ],
                     [
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            return Html::tag('div', $model->description, ['class' => 'file_name'])
-                                . Html::tag('div', Html::activeInput('text', $model, 'description'), ['class' => 'file_hidden-input']);
-                        }
-                    ],
-                    [
                         'class' => 'yii\grid\ActionColumn',
                         'template' => '{update} {delete}',
 //                        'width' => '50px',
                         'buttons' => [
                             'update' => function ($url, $model) {
-                                return Html::a('<span class="glyphicon glyphicon-pencil"></span>', ['/filesAttacher/default/ajax-update', 'id' => $model->id], [
-                                    'class' => 'js-update-attachment-description',
+                                return Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                                    'data' => [
+                                        'toggle' => 'modal',
+                                        'target' => '#file-' . $model->id . '-edit-modal'
+                                    ]
                                 ]);
                             },
                             'delete' => function ($url, $model) {
-                                return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
+                                return Html::a('<span class="glyphicon glyphicon-remove"></span>', '#', [
                                     'class' => 'delete-attachment-file',
                                 ]);
                             }
@@ -145,6 +138,52 @@ $uniqueName = $security->generateRandomString(10);
                     ],
                 ],
             ]); ?>
+            <?php if ($files = $query->all()): ?>
+                <?php foreach ($files as $file): ?>
+                    <div id="file-<?= $file->id ?>-edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                         aria-hidden="true"
+                         style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <?php $form = ActiveForm::begin(); ?>
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h4 class="modal-title">Свойства файла <?= $file->name ?></h4>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="nav nav-tabs navtab-bg nav-justified">
+                                        <?php $i = 0; ?>
+                                        <?php foreach ($languages as $key => $lang): ?>
+                                            <li class="<?= $i++ == 0 ? 'active' : '' ?>">
+                                                <a href="#tab-<?= $lang ?>" data-toggle="tab" aria-expanded="<?= $i == 0 ? 'true' : 'false' ?>">
+                                                    <?= $key ?>
+                                                </a>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <?php $i = 0; ?>
+                                        <?php foreach ($languages as $key => $lang): ?>
+                                            <?php $content = $file->getContent($lang); ?>
+                                            <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
+                                                <?php if (preg_match('/image/ui', $file->mime_type)): ?>
+                                                    <?= $form->field($content, '[' . $content->id . ']name') ?>
+                                                    <?= $form->field($content, '[' . $content->id . ']title') ?>
+                                                <?php endif; ?>
+                                                <?= $form->field($content, '[' . $content->id . ']description') ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <?= Html::button('Сохранить', ['class' => 'btn btn-primary file-edit-submit', 'data-url' => Url::to(['/filesAttacher/default/ajax-update', 'id' => $file->id])]) ?>
+                                </div>
+                                <?php ActiveForm::end(); ?>
+                            </div><!-- /.modal-content -->
+                        </div><!-- /.modal-dialog -->
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
