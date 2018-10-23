@@ -200,6 +200,13 @@ class File extends ActiveRecord
         $this->url = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename);
         $this->trueUrl = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename)], true);
 
+        preg_match('/\/\w{2}\//ui', $this->trueUrl, $match);
+        $match = trim(array_pop($match), '/');
+
+        if (array_search($match, Yii::$app->getModule('languages')->languages) !== false) {
+            $this->trueUrl = preg_replace('/\/\w{2}\//ui', '/', $this->trueUrl);
+        }
+
         $sizes = $this->getSizes();
         if ($sizes) {
             $this->sizes = $sizes;
@@ -217,6 +224,14 @@ class File extends ActiveRecord
         $result = array();
         $path = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
         $truePath = Url::to([Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/")], true);
+
+        preg_match('/\/\w{2}\//ui', $truePath, $match);
+        $match = trim(array_pop($match), '/');
+
+        if (array_search($match, Yii::$app->getModule('languages')->languages) !== false) {
+            $truePath = preg_replace('/\/\w{1,2}\//ui', '/', $truePath);
+        }
+
         if ($withFullPath) {
             $fullPath = Yii::getAlias($this->webrootPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
         }
