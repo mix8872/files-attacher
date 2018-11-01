@@ -203,8 +203,10 @@ class File extends ActiveRecord
         preg_match('/\/\w{2}\//ui', $this->trueUrl, $match);
         $match = trim(array_pop($match), '/');
 
-        if (array_search($match, Yii::$app->getModule('languages')->languages) !== false) {
-            $this->trueUrl = preg_replace('/\/\w{2}\//ui', '/', $this->trueUrl);
+        if ($langModule = Yii::$app->getModule('languages')) {
+            if (array_search($match, $langModule->languages) !== false) {
+                $this->trueUrl = preg_replace('/\/\w{2}\//ui', '/', $this->trueUrl);
+            }
         }
 
         $sizes = $this->getSizes();
@@ -228,8 +230,10 @@ class File extends ActiveRecord
         preg_match('/\/\w{2}\//ui', $truePath, $match);
         $match = trim(array_pop($match), '/');
 
-        if (array_search($match, Yii::$app->getModule('languages')->languages) !== false) {
-            $truePath = preg_replace('/\/\w{1,2}\//ui', '/', $truePath);
+        if ($langModule = Yii::$app->getModule('languages')) {
+            if (array_search($match, $langModule->languages) !== false) {
+                $truePath = preg_replace('/\/\w{1,2}\//ui', '/', $truePath);
+            }
         }
 
         if ($withFullPath) {
