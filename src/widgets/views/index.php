@@ -158,18 +158,25 @@ $uniqueName = $security->generateRandomString(10);
                             <div class="modal-body">
                                 <ul class="nav nav-tabs navtab-bg nav-justified">
                                     <?php $i = 0; ?>
-                                    <?php foreach ($languages as $key => $lang): ?>
+                                    <?php foreach ($languages as $key => $lang):
+                                        if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                                            $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                                        }
+                                        ?>
                                         <li class="<?= $i++ == 0 ? 'active' : '' ?>">
                                             <a href="#tab-<?= $lang ?>" data-toggle="tab" aria-expanded="<?= $i == 0 ? 'true' : 'false' ?>">
-                                                <?= $key ?>
+                                                <?= $lang ?>
                                             </a>
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
                                 <div class="tab-content">
                                     <?php $i = 0; ?>
-                                    <?php foreach ($languages as $key => $lang): ?>
-                                        <?php $content = $file->getContent($lang); ?>
+                                    <?php foreach ($languages as $key => $lang):
+                                        if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                                            $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                                        }
+                                        $content = $file->getContent($lang); ?>
                                         <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
                                             <?php if (preg_match('/image/ui', $file->mime_type)): ?>
                                                 <?= $form->field($content, '[' . $content->id . ']name') ?>

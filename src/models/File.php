@@ -198,7 +198,7 @@ class File extends ActiveRecord
     public function afterFind()
     {
         $this->url = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename);
-        $this->trueUrl = Url::to([Yii::getAlias("@web/uploads/attachments/" . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename)], true);
+        $this->trueUrl = Url::to([Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/" . $this->filename)], true);
 
         preg_match('/\/\w{2}\//ui', $this->trueUrl, $match);
         $match = trim(array_pop($match), '/');
