@@ -101,7 +101,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                                 }
                             }
                         }
-                        $result =  $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
+                        $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
                     } elseif ($file->saveAs($this->filePath)) {
                         $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
                     } else {
@@ -150,10 +150,17 @@ class FileAttachBehavior extends \yii\base\Behavior
         if ($result = $model->save()) {
             if ($langModule = \Yii::$app->getModule('languages')) {
                 foreach ($langModule->languages as $lang) {
+                    if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                        $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                    }
                     $this->_addContentModel($model, $lang);
                 }
             } else {
-                $this->_addContentModel($model, \Yii::$app->language);
+                $lang = \Yii::$app->language;
+                if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                    $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                }
+                $this->_addContentModel($model, $lang);
             }
             return $result;
         } else {
