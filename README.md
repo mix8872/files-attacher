@@ -101,6 +101,45 @@ public function behaviors()
 ```
 In tags attribute you may define tags for attach files, if you define same tags in delteOld attribute then files loaded with this tags will be rewritten by newly added files.
 
+Also you can configure attacment parameters in directly in behavior:
+
+```php
+public function behaviors()
+    {
+        return [
+            'FileAttachBehavior' => [
+                'class' => \mix8872\filesAttacher\behaviors\FileAttachBehavior::class,
+                'tags' => [
+                    'images' => [
+                       'label' => 'Gallery',
+                       'multiple' => true, // true or false. allow multiple loading
+                       'filetypes' => ['image/*'], // array of mime types of allowed files
+                    ],
+                    'videos'
+                ],
+                'deleteOld' => []
+            ],
+			// ... other behaviors
+        ];
+    }
+```
+
+But if you define same paramets in widget then widget parameters will be prioritized.
+In this case you must declare fileAttachBehavior with this name 'FileAttachBehavior':
+
+```php
+public function behaviors()
+    {
+        return [
+            'FileAttachBehavior' => [
+                'class' => \mix8872\filesAttacher\behaviors\FileAttachBehavior::class,
+                ...
+            ],
+			// ... other behaviors
+        ];
+    }
+```
+
 Next you may add widget model and echo widget with its config:
 
 ```php

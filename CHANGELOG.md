@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+Added feature to config file input parameters in behavior directly
+
 ## 1.3.2
 
 Fixed allFiles method
