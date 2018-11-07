@@ -226,11 +226,13 @@ class File extends ActiveRecord
         $result = array();
         $path = Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
         $truePath = Url::to([Yii::getAlias($this->webPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/")], true);
+        $exFilename = explode('.', $this->filename);
+        $module = Yii::$app->getModule('filesAttacher');
 
         preg_match('/\/\w{2}\//ui', $truePath, $match);
         $match = trim(array_pop($match), '/');
 
-        if ($langModule = Yii::$app->getModule('languages')) {
+        if ($langModule = Yii::$app->getModule('languages')) { // remove lang from truePath
             if (array_search($match, $langModule->languages) !== false) {
                 $truePath = preg_replace('/\/\w{1,2}\//ui', '/', $truePath);
             }
@@ -239,8 +241,7 @@ class File extends ActiveRecord
         if ($withFullPath) {
             $fullPath = Yii::getAlias($this->webrootPath . $this->model_name . "/" . $this->model_id . "/" . $this->tag . "/");
         }
-        $exFilename = explode('.', $this->filename);
-        $module = Yii::$app->getModule('filesAttacher');
+
         $sizesNameBy = $module->parameters['sizesNameBy'];
         if (isset($module->parameters['imageResize']) && !empty($module->parameters['imageResize'])) {
             foreach ($module->parameters['imageResize'] as $key => $size) {

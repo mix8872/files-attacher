@@ -58,7 +58,15 @@ class FileAttachBehavior extends \yii\base\Behavior
         $class = $this->_getModelName();
         $model_id = $this->owner->id;
 
-        foreach ($this->tags as $tag) {
+        foreach ($this->tags as $key => $tag) {
+
+            $tagAttributes = null;
+
+            if (is_array($tag)) {
+                $tagAttributes = $tag;
+                $tag = $key;
+            }
+
             $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $tag . ']');
             if (empty($attachments)) {
                 $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $model_id . '][' . $tag . ']');
@@ -66,8 +74,7 @@ class FileAttachBehavior extends \yii\base\Behavior
 
             if ($attachments && !empty($attachments)) {
                 if (in_array($tag, $this->deleteOld)) {
-                    $olds = File::find()->where(['tag' => $tag, 'model_name' => $class, 'model_id' => $model_id])->all();
-                    if (!empty($olds)) {
+                    if ($olds = $this->getFiles($tag)) {
                         foreach ($olds as $old) {
                             $old->delete();
                         }
@@ -80,36 +87,43 @@ class FileAttachBehavior extends \yii\base\Behavior
                 }
 
                 foreach ($attachments as $file) {
-                    $filename = $this->_getFileName($file->baseName, $path, $file->extension);
-                    $this->filePath = $path . "/" . $filename . "." . $file->extension;
+                    $allow = true;
+                    if ($tagAttributes && isset($tagAttributes['filetypes'])) { //if isset filetypes in behavior check uploaded file
+                        $allow = $this->_checkFileType($tagAttributes['filetypes'], $file);
+                    }
+                    if ($allow) {
+                        $filename = $this->_getFileName($file->baseName, $path, $file->extension);
+                        $this->filePath = $path . "/" . $filename . "." . $file->extension;
 
-                    if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type) && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
-                        if (isset($this->module->parameters['origResize'])) {
-                            $origResize = $this->module->parameters['origResize'];
-                            if ($this->_checkOrigResizeArray($origResize)) {
-                                $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
-                                $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
-                                $this->_saveSize($this->filePath, $resWidth, $resHeight, $this->filePath);
-                            } elseif (is_array($origResize)) {
-                                foreach ($origResize as $size) {
-                                    if ($this->_checkOrigResizeArray($size)) {
-                                        $resWidth = isset($size['width']) ? $size['width'] : null;
-                                        $resHeight = isset($size['width']) ? $size['height'] : null;
-                                        $this->_saveSize($resWidth, $resHeight, $this->filePath);
-                                        break;
+                        if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)
+                            && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
+                            if (isset($this->module->parameters['origResize'])) {
+                                $origResize = $this->module->parameters['origResize'];
+                                if ($this->_checkOrigResizeArray($origResize)) {
+                                    $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
+                                    $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
+                                    $this->_saveSize($resWidth, $resHeight, $this->filePath);
+                                } elseif (is_array($origResize)) {
+                                    foreach ($origResize as $size) {
+                                        if ($this->_checkOrigResizeArray($size)) {
+                                            $resWidth = isset($size['width']) ? $size['width'] : null;
+                                            $resHeight = isset($size['width']) ? $size['height'] : null;
+                                            $this->_saveSize($resWidth, $resHeight, $this->filePath);
+                                            break;
+                                        }
                                     }
                                 }
                             }
+                            $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
+                        } elseif ($file->saveAs($this->filePath)) {
+                            $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
+                        } else {
+//                            return false;
+                            error_log("FILE SAVE ERROR: " . $file->baseName);
                         }
-                        $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
-                    } elseif ($file->saveAs($this->filePath)) {
-                        $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
                     } else {
-                        error_log("FILE SAVE ERROR: " . $file->baseName);
-                    }
-                    if (!$result) {
-                        error_log("FILE SAVE ERROR: " . $file->baseName . PHP_EOL . $result);
-                        return $result;
+//                        return false;
+                        error_log("FILE VALIDATION ERROR: " . $file->baseName);
                     }
                 }
             } else {
@@ -150,22 +164,16 @@ class FileAttachBehavior extends \yii\base\Behavior
         if ($result = $model->save()) {
             if ($langModule = \Yii::$app->getModule('languages')) {
                 foreach ($langModule->languages as $lang) {
-                    if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
-                        $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
-                    }
                     $this->_addContentModel($model, $lang);
                 }
             } else {
                 $lang = \Yii::$app->language;
-                if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
-                    $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
-                }
                 $this->_addContentModel($model, $lang);
             }
             return $result;
         } else {
             $errors = $model->getErrors();
-            error_log("FILE SAVE IN DB ERROR: " . print_r($errors));
+            error_log("FILE SAVE IN DB ERROR: " . print_r($errors, 1));
         }
         return false;
     }
@@ -176,6 +184,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     private function _addContentModel($model, $lang)
     {
+        $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
         $fileContent = new FileContent();
         $fileContent->file_id = $model->id;
         $fileContent->lang = $lang;
@@ -305,11 +314,31 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     private function _getModelName($full = false)
     {
-        $fullClass = get_class($this->owner);
         if ($full) {
-            return $fullClass;
+            return get_class($this->owner);
         }
-        $classExplode = explode('\\', $fullClass);
-        return array_pop($classExplode);
+        return $this->owner->formName();
+    }
+
+    /**
+     * @param array $allowed
+     * @param \yii\web\UploadedFile $file
+     * @return boolean
+     */
+    private function _checkFileType($allowed, $file)
+    {
+        if (is_array($allowed)) {
+            foreach ($allowed as $item) {
+                $item = preg_replace('%/\*$%ui', '/.*', $item);
+                if (preg_match('%' . $item . '%ui', $file->type)) {
+                    return true;
+                }
+            }
+        } else {
+            if (preg_match('%' . preg_replace('%/\*$%ui', '/.*', $allowed) . '%ui', $file->type)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -13,20 +13,14 @@ use richardfan\sortable\SortableGridView;
 use yii\base\Security;
 use yii\widgets\ActiveForm;
 
-$class = explode('\\', $model->className());
-
 $security = new Security();
 $uniqueName = $security->generateRandomString(10);
 ?>
 <div class="form-group">
-    <?php if ($title): ?>
-        <label class="control-label" for="<?= $uniqueName ?>"><?= $title ?></label>
-    <?php else: ?>
-        <label class="control-label" for="<?= $uniqueName ?>"><?= $tag ?></label>
-    <?php endif; ?>
+    <label class="control-label" for="<?= $uniqueName ?>"><?= $label ?></label>
     <input type="file"
-           name="<?= 'Attachment[' . $class[sizeof($class) - 1] . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
-           id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $filetypes ?>"
+           name="<?= 'Attachment[' . $model->formName() . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
+           id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $inputFileTypes ?>"
            class="form-control"
            title="Выбрать файл"/>
 
@@ -42,8 +36,8 @@ $uniqueName = $security->generateRandomString(10);
                         browseLabel: '',
                         removeLabel: '',
                         mainClass: 'input-group',
-                        allowedFileTypes: JSON.parse('" . $allowedFileTypes . "'),
-                        allowedFileExtensions: JSON.parse('" . $allowedFileExtensions . "'),
+                        allowedFileTypes: JSON.parse('" . $jsAllowedFileTypes . "'),
+                        allowedFileExtensions: JSON.parse('" . $jsAllowedFileExtensions . "'),
                         browseClass: 'btn btn-default'
                     });
                 });
