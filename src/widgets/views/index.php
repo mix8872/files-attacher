@@ -10,11 +10,8 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
 use richardfan\sortable\SortableGridView;
-use yii\base\Security;
 use yii\widgets\ActiveForm;
 
-$security = new Security();
-$uniqueName = $security->generateRandomString(10);
 ?>
 <div class="form-group">
     <label class="control-label" for="<?= $uniqueName ?>"><?= $label ?></label>

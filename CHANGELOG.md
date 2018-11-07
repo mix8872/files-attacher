@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+Fixed bug with multiple file types and extensions
+
 ## 1.4.0
 
 Added feature to config file input parameters in behavior directly
