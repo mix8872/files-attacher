@@ -126,7 +126,7 @@ use yii\widgets\ActiveForm;
                             ]);
                         },
                         'delete' => function ($url, $model) {
-                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', '#', [
+                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                 'class' => 'delete-attachment-file',
                             ]);
                         }

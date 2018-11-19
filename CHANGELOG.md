@@ -1,5 +1,9 @@
 # Changelog
 
+##1.4.2
+
+Fixed bug with action btns in admin widget.
+
 ## 1.4.1
 
 Fixed bug with multiple file types and extensions
