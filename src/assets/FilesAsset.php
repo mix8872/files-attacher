@@ -30,6 +30,5 @@ class FilesAsset extends \yii\web\AssetBundle
 
     public $depends = [
 		'yii\jui\JuiAsset',
-		'mix8872\admin\assets\MainAsset',
     ];
 }
