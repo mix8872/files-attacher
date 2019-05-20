@@ -5,3 +5,7 @@
 .file_hidden-input {
     display: none;
 }
+
+.file-table td {
+    padding: 5px;
+}

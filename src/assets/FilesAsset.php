@@ -30,5 +30,6 @@ class FilesAsset extends \yii\web\AssetBundle
 
     public $depends = [
 		'yii\jui\JuiAsset',
+		'backend\assets\AppAsset',
     ];
 }

@@ -69,8 +69,8 @@ class FilesWidget extends \yii\base\Widget
 
         $this->behavior = $this->model->getBehavior('FileAttachBehavior');
 
-        if (!isset($this->label)) {
-            $this->label = $ths->title ?? $this->behavior->tags[$this->tag]['label'] ?? $this->tag;
+        if (!$this->label) {
+            $this->label = $ths->title ?? $this->behavior->tags[$this->tag]['label'] ?? $this->model->attributeLabels()[$this->tag] ?? $this->tag;
         }
 
         FilesAsset::register($this->view);

@@ -43,7 +43,7 @@ use yii\widgets\ActiveForm;
     <?php if (!$multiple):
         $files = $query->one();
         if (!empty($files)): ?>
-            <table>
+            <table class="file-table">
                 <tr>
                     <?php $type = explode('/', $files->mime_type); ?>
                     <?php if ($type[0] == 'image'): ?>
@@ -69,6 +69,12 @@ use yii\widgets\ActiveForm;
                         </td>
                     <?php endif; ?>
                     <td>
+                        <?= Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                            'data' => [
+                                'toggle' => 'modal',
+                                'target' => '#file-' . $files->id . '-edit-modal'
+                            ]
+                        ]) ?>
                         <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
                             'class' => 'delete-attachment-file',
                         ]) ?>
@@ -108,7 +114,7 @@ use yii\widgets\ActiveForm;
                                 ['width' => '150px', 'controls' => true]
                             );
                         } else {
-                            return Html::a(Yii::t('files', 'Preview'), $model->url, ['tagret' => '_blank']);
+                            return Html::a(Yii::t('files', 'Preview'), [$model->url], ['tagret' => '_blank']);
                         }
                     }
                 ],
@@ -134,58 +140,60 @@ use yii\widgets\ActiveForm;
                 ],
             ],
         ]); ?>
-        <?php if ($files = $query->all()): ?>
-            <?php foreach ($files as $file): ?>
-                <div id="file-<?= $file->id ?>-edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                     aria-hidden="true"
-                     style="display: none;">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <?php $form = ActiveForm::begin(); ?>
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h4 class="modal-title">Свойства файла <?= $file->name ?></h4>
+    <?php endif; ?>
+    <?php if ($files = $query->all()): ?>
+        <?php foreach ($files as $file): ?>
+            <div id="file-<?= $file->id ?>-edit-modal" class="modal fade" tabindex="-1" role="dialog"
+                 aria-labelledby="myModalLabel"
+                 aria-hidden="true"
+                 style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <?php $form = ActiveForm::begin(); ?>
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 class="modal-title">Свойства файла <?= $file->name ?></h4>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="nav nav-tabs navtab-bg nav-justified">
+                                <?php $i = 0; ?>
+                                <?php foreach ($languages as $key => $lang):
+                                    if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                                        $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                                    }
+                                    ?>
+                                    <li class="<?= $i++ == 0 ? 'active' : '' ?>">
+                                        <a href="#tab-<?= $lang ?>" data-toggle="tab"
+                                           aria-expanded="<?= $i == 0 ? 'true' : 'false' ?>">
+                                            <?= $lang ?>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <div class="tab-content">
+                                <?php $i = 0; ?>
+                                <?php foreach ($languages as $key => $lang):
+                                    if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
+                                        $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
+                                    }
+                                    $content = $file->getContent($lang); ?>
+                                    <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
+                                        <?php if (preg_match('/image/ui', $file->mime_type)): ?>
+                                            <?= $form->field($content, '[' . $content->id . ']name') ?>
+                                            <?= $form->field($content, '[' . $content->id . ']title') ?>
+                                        <?php endif; ?>
+                                        <?= $form->field($content, '[' . $content->id . ']description') ?>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="modal-body">
-                                <ul class="nav nav-tabs navtab-bg nav-justified">
-                                    <?php $i = 0; ?>
-                                    <?php foreach ($languages as $key => $lang):
-                                        if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
-                                            $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
-                                        }
-                                        ?>
-                                        <li class="<?= $i++ == 0 ? 'active' : '' ?>">
-                                            <a href="#tab-<?= $lang ?>" data-toggle="tab" aria-expanded="<?= $i == 0 ? 'true' : 'false' ?>">
-                                                <?= $lang ?>
-                                            </a>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                                <div class="tab-content">
-                                    <?php $i = 0; ?>
-                                    <?php foreach ($languages as $key => $lang):
-                                        if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
-                                            $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
-                                        }
-                                        $content = $file->getContent($lang); ?>
-                                        <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
-                                            <?php if (preg_match('/image/ui', $file->mime_type)): ?>
-                                                <?= $form->field($content, '[' . $content->id . ']name') ?>
-                                                <?= $form->field($content, '[' . $content->id . ']title') ?>
-                                            <?php endif; ?>
-                                            <?= $form->field($content, '[' . $content->id . ']description') ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <?= Html::button('Сохранить', ['class' => 'btn btn-primary file-edit-submit', 'data-url' => Url::to(['/filesAttacher/default/ajax-update', 'id' => $file->id])]) ?>
-                            </div>
-                            <?php ActiveForm::end(); ?>
-                        </div><!-- /.modal-content -->
-                    </div><!-- /.modal-dialog -->
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                        </div>
+                        <div class="modal-footer">
+                            <?= Html::button('Сохранить', ['class' => 'btn btn-primary file-edit-submit', 'data-url' => Url::to(['/filesAttacher/default/ajax-update', 'id' => $file->id])]) ?>
+                        </div>
+                        <?php ActiveForm::end(); ?>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div>
+        <?php endforeach; ?>
     <?php endif; ?>
 </div>
