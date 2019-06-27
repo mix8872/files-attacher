@@ -307,6 +307,7 @@ class File extends ActiveRecord
     public function getContent($language = null)
     {
         $language = $language ? $language : Yii::$app->language;
+        $language = preg_replace('/-\w+$/', '', $language);
         return $this->hasMany(FileContent::class, ['file_id' => 'id'])->where(['lang' => $language])->one();
     }
 }
