@@ -8,6 +8,7 @@ use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\VerbFilter;
 use mix8872\filesAttacher\models\File;
+use yii\web\NotFoundHttpException;
 
 /**
  * MenuController implements the CRUD actions for Menu model.
@@ -132,7 +133,7 @@ class DefaultController extends \yii\web\Controller
         if (($model = File::findOne($id)) !== null) {
             return $model;
         } else {
-            throw new NotFoundHttpException('The requested page does not exist.');
+            throw new NotFoundHttpException('The requested page does not exist.');=
         }
     }
 }

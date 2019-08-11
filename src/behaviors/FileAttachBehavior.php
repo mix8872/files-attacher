@@ -22,9 +22,12 @@ class FileAttachBehavior extends \yii\base\Behavior
     public $tags;
     public $deleteOld;
     private $fullModelName;
+    private $path;
     private $filePath;
     private $module;
     private $manager;
+    private $modelClass;
+    private $modelId;
 
     public function __construct()
     {
@@ -54,9 +57,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function saveAttachments($event)
     {
-        $this->fullModelName = $this->_getModelName(1);
-        $class = $this->_getModelName();
-        $model_id = $this->owner->id;
+        $this->_setParams();
 
         foreach ($this->tags as $key => $tag) {
 
@@ -67,9 +68,9 @@ class FileAttachBehavior extends \yii\base\Behavior
                 $tag = $key;
             }
 
-            $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $tag . ']');
+            $attachments = UploadedFile::getInstancesByName('Attachment[' . $this->modelClass . '][' . $tag . ']');
             if (empty($attachments)) {
-                $attachments = UploadedFile::getInstancesByName('Attachment[' . $class . '][' . $model_id . '][' . $tag . ']');
+                $attachments = UploadedFile::getInstancesByName('Attachment[' . $this->modelClass . '][' . $this->modelId . '][' . $tag . ']');
             }
 
             if ($attachments && !empty($attachments)) {
@@ -80,51 +81,9 @@ class FileAttachBehavior extends \yii\base\Behavior
                         }
                     }
                 }
-
-                $path = Yii::getAlias('@webroot' . $this->module->parameters['savePath'] . $class . "/" . $model_id . "/" . $tag);
-                if (!is_dir($path)) {
-                    mkdir($path, 0755, true);
-                }
-
+                $this->_setPath($tag);
                 foreach ($attachments as $file) {
-                    $allow = true;
-                    if ($tagAttributes && isset($tagAttributes['filetypes'])) { //if isset filetypes in behavior check uploaded file
-                        $allow = $this->_checkFileType($tagAttributes['filetypes'], $file);
-                    }
-                    if ($allow) {
-                        $filename = $this->_getFileName($file->baseName, $path, $file->extension);
-                        $this->filePath = $path . "/" . $filename . "." . $file->extension;
-
-                        if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)
-                            && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
-                            if (isset($this->module->parameters['origResize'])) {
-                                $origResize = $this->module->parameters['origResize'];
-                                if ($this->_checkOrigResizeArray($origResize)) {
-                                    $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
-                                    $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
-                                    $this->_saveSize($resWidth, $resHeight, $this->filePath);
-                                } elseif (is_array($origResize)) {
-                                    foreach ($origResize as $size) {
-                                        if ($this->_checkOrigResizeArray($size)) {
-                                            $resWidth = isset($size['width']) ? $size['width'] : null;
-                                            $resHeight = isset($size['width']) ? $size['height'] : null;
-                                            $this->_saveSize($resWidth, $resHeight, $this->filePath);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag, true);
-                        } elseif ($file->saveAs($this->filePath)) {
-                            $result = $this->_saveAttachment($model_id, $class, $file, $filename, $tag);
-                        } else {
-//                            return false;
-                            error_log("FILE SAVE ERROR: " . $file->baseName);
-                        }
-                    } else {
-//                        return false;
-                        error_log("FILE VALIDATION ERROR: " . $file->baseName);
-                    }
+                    $this->_saveFile($file, $tagAttributes, $tag);
                 }
             } else {
 //                error_log("IS NO ATTACHMENTS FOR THIS TAG: ".$tag);
@@ -133,20 +92,105 @@ class FileAttachBehavior extends \yii\base\Behavior
         return false;
     }
 
+    public function attachByUrl($tag, $url)
+    {
+        foreach ($this->tags as $key => $tagItem) {
+            $tagAttributes = null;
+            if (is_array($tagItem)) {
+                $tagAttributes = $tag;
+                $tagItem = $key;
+            }
+            if ($tagItem === $tag) {
+                break;
+            }
+        }
+
+        $this->_setParams();
+
+        $data = get_headers($url, true);
+        $path = parse_url($url, PHP_URL_PATH);
+        $tempModelClassTime = microtime(1);
+
+        $file = new \stdClass();
+        $file->baseName = $path ? basename($path) : (isset($data['ETag']) ? trim($data['ETag'], '"') : (new Security())->generateRandomString(12));
+        $file->type = $data['Content-Type'] ?? 'image/jpeg';
+        $file->extension = substr(strstr($file->type, '/'), 1, strlen($file->type));
+        $file->tempName = $url;
+        $file->size = $data['Content-Length'] ?? 0;
+        
+        $this->_setPath($tag);
+        $this->_saveFile($file, $tagAttributes, $tag);
+    }
+
+    private function _setParams()
+    {
+        $this->fullModelName = $this->_getModelName(1);
+        $this->modelClass = $this->_getModelName();
+        $this->modelId = $this->owner->id;
+    }
+
+    private function _setPath($tag)
+    {
+        $this->path = Yii::getAlias('@webroot' . $this->module->parameters['savePath'] . $this->modelClass . "/" . $this->modelId . "/" . $tag);
+        if (!is_dir($this->path)) {
+            mkdir($this->path, 0755, true);
+        }
+    }
+
+    private function _saveFile($file, $tagAttributes, $tag)
+    {
+        $allow = true;
+        if ($tagAttributes && isset($tagAttributes['filetypes'])) { //if isset filetypes in behavior check uploaded file
+            $allow = $this->_checkFileType($tagAttributes['filetypes'], $file);
+        }
+        if ($allow) {
+            $filename = $this->_getFileName($file->baseName, $this->path, $file->extension);
+            $this->filePath = $this->path . "/" . $filename . "." . $file->extension;
+
+            if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)
+                && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
+
+                if (isset($this->module->parameters['origResize'])) {
+                    $origResize = $this->module->parameters['origResize'];
+                    if ($this->_checkOrigResizeArray($origResize)) {
+                        $resWidth = isset($origResize['width']) ? $origResize['width'] : null;
+                        $resHeight = isset($origResize['width']) ? $origResize['height'] : null;
+                        $this->_saveSize($resWidth, $resHeight, $this->filePath);
+                    } elseif (is_array($origResize)) {
+                        foreach ($origResize as $size) {
+                            if ($this->_checkOrigResizeArray($size)) {
+                                $resWidth = isset($size['width']) ? $size['width'] : null;
+                                $resHeight = isset($size['width']) ? $size['height'] : null;
+                                $this->_saveSize($resWidth, $resHeight, $this->filePath);
+                                break;
+                            }
+                        }
+                    }
+                }
+                return $this->_saveFileModel($file, $filename, $tag, true);
+            } elseif ($file->saveAs($this->filePath)) {
+                return $this->_saveFileModel($$file, $filename, $tag);
+            } else {
+                error_log("FILE SAVE ERROR: " . $file->baseName);
+            }
+        } else {
+            error_log("FILE VALIDATION ERROR: " . $file->baseName);
+        }
+        return false;
+    }
+
     /**
-     * @param $model_id
-     * @param $class
      * @param $file
      * @param $filename
      * @param $tag
      * @param bool $isImage
      * @return bool
      */
-    private function _saveAttachment($model_id, $class, $file, $filename, $tag, $isImage = false)
+    private function _saveFileModel($file, $filename, $tag, $isImage = false)
     {
         $model = new File();
-        $model->model_id = $model_id;
-        $model->model_name = $class;
+        $model->model_id = $this->modelId;
+        $model->model_name = $this->modelClass;
         $model->name = $file->baseName;
         $model->filename = $filename . "." . $file->extension;
         $model->mime_type = $file->type;
