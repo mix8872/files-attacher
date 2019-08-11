@@ -63,6 +63,29 @@ Common:
 	// ... other modules definition
 ],
 ```
+
+Frontend: 
+
+```
+'modules' => [
+        ...
+        
+        'filesAttacher' => [
+            'as access' => [
+                'class' => \yii\filters\AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+```
+## Important!!!
+#### Don't forget deny access to module from frontend app!!!
+
+
 In config you may define access control to prevent access to the administrative part of the module.
 
 Also you can define `imageResize` to create additional sizes for uploaded images.
@@ -163,6 +186,11 @@ use mix8872\filesAttacher\widgets\FilesWidget;
 ```
 
 IMPORTANT ! you may define multipart/form-data enctype in you form!
+
+Also you can attach file to model by url as follows:
+```php
+$model->attachByUrl(<tag>, <url>);
+```
 
 You can get the model files by calling the method:
 ```php
