@@ -1,5 +1,10 @@
 # Changelog
 
+##1.5.0
+
+Added saveByUrl() function
+Updated composer.json and readme
+
 ##1.4.2
 
 Fixed bug with action btns in admin widget.

@@ -21,13 +21,13 @@ class FileAttachBehavior extends \yii\base\Behavior
 {
     public $tags;
     public $deleteOld;
-    private $fullModelName;
-    private $path;
-    private $filePath;
-    private $module;
-    private $manager;
-    private $modelClass;
-    private $modelId;
+    protected $fullModelName;
+    protected $path;
+    protected $filePath;
+    protected $module;
+    protected $manager;
+    protected $modelClass;
+    protected $modelId;
 
     public function __construct()
     {
@@ -109,7 +109,6 @@ class FileAttachBehavior extends \yii\base\Behavior
 
         $data = get_headers($url, true);
         $path = parse_url($url, PHP_URL_PATH);
-        $tempModelClassTime = microtime(1);
 
         $file = new \stdClass();
         $file->baseName = $path ? basename($path) : (isset($data['ETag']) ? trim($data['ETag'], '"') : (new Security())->generateRandomString(12));
@@ -122,14 +121,14 @@ class FileAttachBehavior extends \yii\base\Behavior
         $this->_saveFile($file, $tagAttributes, $tag);
     }
 
-    private function _setParams()
+    protected function _setParams()
     {
         $this->fullModelName = $this->_getModelName(1);
         $this->modelClass = $this->_getModelName();
         $this->modelId = $this->owner->id;
     }
 
-    private function _setPath($tag)
+    protected function _setPath($tag)
     {
         $this->path = Yii::getAlias('@webroot' . $this->module->parameters['savePath'] . $this->modelClass . "/" . $this->modelId . "/" . $tag);
         if (!is_dir($this->path)) {
@@ -137,7 +136,7 @@ class FileAttachBehavior extends \yii\base\Behavior
         }
     }
 
-    private function _saveFile($file, $tagAttributes, $tag)
+    protected function _saveFile($file, $tagAttributes, $tag)
     {
         $allow = true;
         if ($tagAttributes && isset($tagAttributes['filetypes'])) { //if isset filetypes in behavior check uploaded file
@@ -147,8 +146,17 @@ class FileAttachBehavior extends \yii\base\Behavior
             $filename = $this->_getFileName($file->baseName, $this->path, $file->extension);
             $this->filePath = $this->path . "/" . $filename . "." . $file->extension;
 
-            if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)
-                && $this->manager->make($file->tempName)->orientate()->save($this->filePath)) {
+            if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)) {
+
+                try {
+                    $imgSaveRes = $this->manager->make($file->tempName)->orientate()->save($this->filePath);
+                } catch (\Exception $e) {
+                    error_log($e->getMessage());
+                    return false;
+                }
+                if (!$imgSaveRes) {
+                    return false;
+                }
 
                 if (isset($this->module->parameters['origResize'])) {
                     $origResize = $this->module->parameters['origResize'];
@@ -186,7 +194,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param bool $isImage
      * @return bool
      */
-    private function _saveFileModel($file, $filename, $tag, $isImage = false)
+    protected function _saveFileModel($file, $filename, $tag, $isImage = false)
     {
         $model = new File();
         $model->model_id = $this->modelId;
@@ -226,7 +234,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param $model
      * @param $lang
      */
-    private function _addContentModel($model, $lang)
+    protected function _addContentModel($model, $lang)
     {
         $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
         $fileContent = new FileContent();
@@ -239,7 +247,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param $origResize
      * @return bool
      */
-    private function _checkOrigResizeArray($origResize)
+    protected function _checkOrigResizeArray($origResize)
     {
         return (isset($origResize)
                 && is_array($origResize)
@@ -257,7 +265,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param $path - Save full path
      * @return \Intervention\Image\Image
      */
-    private function _saveSize($width, $height, $path)
+    protected function _saveSize($width, $height, $path)
     {
         if ($width || $height) {
             return $this->manager->make($this->filePath)->resize($width, $height, function ($constraint) {
@@ -274,7 +282,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @return mixed|null|string|string[]
      * @throws \yii\base\Exception
      */
-    private function _getFileName($name, $path, $extension)
+    protected function _getFileName($name, $path, $extension)
     {
         $fileNameBy = $this->module->parameters['filesNameBy'];
         if ($fileNameBy === 'translit'
@@ -356,7 +364,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param bool $full
      * @return mixed|string
      */
-    private function _getModelName($full = false)
+    protected function _getModelName($full = false)
     {
         if ($full) {
             return get_class($this->owner);
@@ -369,7 +377,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      * @param \yii\web\UploadedFile $file
      * @return boolean
      */
-    private function _checkFileType($allowed, $file)
+    protected function _checkFileType($allowed, $file)
     {
         if (is_array($allowed)) {
             foreach ($allowed as $item) {
