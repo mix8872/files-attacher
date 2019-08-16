@@ -118,7 +118,7 @@ class FileAttachBehavior extends \yii\base\Behavior
         $file->size = $data['Content-Length'] ?? 0;
         
         $this->_setPath($tag);
-        $this->_saveFile($file, $tagAttributes, $tag);
+        return $this->_saveFile($file, $tagAttributes, $tag);
     }
 
     protected function _setParams()

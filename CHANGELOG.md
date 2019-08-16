@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.1
+
+Add return for attachByUrl() function
+
 ##1.5.0
 
 Added saveByUrl() function
