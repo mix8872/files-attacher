@@ -107,7 +107,7 @@ class FileAttachBehavior extends \yii\base\Behavior
 
         $this->_setParams();
 
-        $data = get_headers($url, true);
+        $data = @get_headers($url, true);
         $path = parse_url($url, PHP_URL_PATH);
 
         $file = new \stdClass();

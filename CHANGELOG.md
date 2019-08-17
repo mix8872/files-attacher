@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.2
+
+Cancel warnings on getHeader
+
 ##1.5.1
 
 Add return for attachByUrl() function
