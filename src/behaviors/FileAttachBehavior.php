@@ -29,6 +29,63 @@ class FileAttachBehavior extends \yii\base\Behavior
     protected $modelClass;
     protected $modelId;
 
+    protected static $types = [
+        'txt' => 'text/plain',
+        'htm' => 'text/html',
+        'html' => 'text/html',
+        'php' => 'text/html',
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
+        'xml' => 'application/xml',
+        'swf' => 'application/x-shockwave-flash',
+        'flv' => 'video/x-flv',
+
+        // images
+        'png' => 'image/png',
+        'jpe' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'jpg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'bmp' => 'image/bmp',
+        'ico' => 'image/vnd.microsoft.icon',
+        'tiff' => 'image/tiff',
+        'tif' => 'image/tiff',
+        'svg' => 'image/svg+xml',
+        'svgz' => 'image/svg+xml',
+
+        // archives
+        'zip' => 'application/zip',
+        'rar' => 'application/x-rar-compressed',
+        'exe' => 'application/x-msdownload',
+        'msi' => 'application/x-msdownload',
+        'cab' => 'application/vnd.ms-cab-compressed',
+
+        // audio/video
+        'mp3' => 'audio/mpeg',
+        'mp4' => 'video/mp4',
+        'avi' => 'video/mp4',
+        'qt' => 'video/quicktime',
+        'mov' => 'video/quicktime',
+
+        // adobe
+        'pdf' => 'application/pdf',
+        'psd' => 'image/vnd.adobe.photoshop',
+        'ai' => 'application/postscript',
+        'eps' => 'application/postscript',
+        'ps' => 'application/postscript',
+
+        // ms office
+        'doc' => 'application/msword',
+        'rtf' => 'application/rtf',
+        'xls' => 'application/vnd.ms-excel',
+        'ppt' => 'application/vnd.ms-powerpoint',
+
+        // open office
+        'odt' => 'application/vnd.oasis.opendocument.text',
+        'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+    ];
+
     public function __construct()
     {
         $this->module = Yii::$app->getModule('filesAttacher');
@@ -107,16 +164,35 @@ class FileAttachBehavior extends \yii\base\Behavior
 
         $this->_setParams();
 
-        $data = @get_headers($url, true);
-        $path = parse_url($url, PHP_URL_PATH);
+        $file = new class()
+        {
+            public $baseName;
+            public $type;
+            public $extension;
+            public $size;
+            public $tempName;
 
-        $file = new \stdClass();
-        $file->baseName = $path ? basename($path) : (isset($data['ETag']) ? trim($data['ETag'], '"') : (new Security())->generateRandomString(12));
-        $file->type = $data['Content-Type'] ?? 'image/jpeg';
-        $file->extension = substr(strstr($file->type, '/'), 1, strlen($file->type));
+            public function saveAs($path)
+            {
+                return copy($this->tempName, $path);
+            }
+        };
+        if (filetype($url) === 'file') {
+            $data = pathinfo($url);
+            $file->baseName = $data['filename'] .'-' . date("d-m-Y-H-i");
+            $file->type = mime_content_type($url);
+            $file->extension = $data['extension'];
+            $file->size = filesize($url);
+        } else {
+            $data = @get_headers($url, true);
+            $path = parse_url($url, PHP_URL_PATH);
+            $file->baseName = $path ? basename($path) : (isset($data['ETag']) ? trim($data['ETag'], '"') : (new Security())->generateRandomString(12));
+            $file->type = $data['Content-Type'] ?? self::$types[$extension];
+            $file->extension = substr(strstr($file->type, '/'), 1, strlen($file->type));
+            $file->size = $data['Content-Length'] ?? 0;
+        }
         $file->tempName = $url;
-        $file->size = $data['Content-Length'] ?? 0;
-        
+
         $this->_setPath($tag);
         return $this->_saveFile($file, $tagAttributes, $tag);
     }
@@ -177,7 +253,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                 }
                 return $this->_saveFileModel($file, $filename, $tag, true);
             } elseif ($file->saveAs($this->filePath)) {
-                return $this->_saveFileModel($$file, $filename, $tag);
+                return $this->_saveFileModel($file, $filename, $tag);
             } else {
                 error_log("FILE SAVE ERROR: " . $file->baseName);
             }

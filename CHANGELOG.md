@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.3
+
+Fix bugs. Optimize attachByUrl() function
+
 ##1.5.2
 
 Cancel warnings on getHeader
