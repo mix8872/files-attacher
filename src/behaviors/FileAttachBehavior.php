@@ -177,7 +177,8 @@ class FileAttachBehavior extends \yii\base\Behavior
                 return copy($this->tempName, $path);
             }
         };
-        if (filetype($url) === 'file') {
+
+        if (strstr($url, 'http') === false && filetype($url) === 'file') {
             $data = pathinfo($url);
             $file->baseName = $data['filename'] .'-' . date("d-m-Y-H-i");
             $file->type = mime_content_type($url);

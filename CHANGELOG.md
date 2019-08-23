@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.4
+
+Fix bug when check filetype
+
 ##1.5.3
 
 Fix bugs. Optimize attachByUrl() function
