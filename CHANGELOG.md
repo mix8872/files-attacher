@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.5
+
+Add handler on copy fails
+
 ##1.5.4
 
 Fix bug when check filetype

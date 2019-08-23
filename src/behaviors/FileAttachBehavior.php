@@ -174,7 +174,13 @@ class FileAttachBehavior extends \yii\base\Behavior
 
             public function saveAs($path)
             {
-                return copy($this->tempName, $path);
+                try {
+                    $res = copy($this->tempName, $path);
+                    return $res;
+                } catch (\Error $e) {
+                    error_log($e->getMessage());
+                    return false;
+                }
             }
         };
 
