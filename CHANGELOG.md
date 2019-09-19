@@ -1,5 +1,9 @@
 # Changelog
 
+##1.5.6
+
+Fix bug with deleting all attachments of model when parent model is deleting
+
 ##1.5.5
 
 Add handler on copy fails
