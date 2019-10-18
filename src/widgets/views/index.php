@@ -32,10 +32,11 @@ use yii\widgets\ActiveForm;
                         previewFileType:'any',
                         browseLabel: '',
                         removeLabel: '',
+                        theme: 'fa',
                         mainClass: 'input-group',
                         allowedFileTypes: JSON.parse('" . $jsAllowedFileTypes . "'),
                         allowedFileExtensions: JSON.parse('" . $jsAllowedFileExtensions . "'),
-                        browseClass: 'btn btn-default'
+                        browseClass: 'btn btn-info'
                     });
                 });
             }(jQuery));
@@ -62,20 +63,20 @@ use yii\widgets\ActiveForm;
                         </td>
                     <?php else: ?>
                         <td>
-                            <?= Html::tag('i', '', ['class' => 'glyphicon glyphicon-file', 'style' => 'font-size: 100px;']) ?>
+                            <?= Html::tag('i', '', ['class' => 'far fa-file', 'style' => 'font-size: 100px;']) ?>
                         </td>
                         <td>
                             <?= Html::tag('span', $files->name . '.' . $type[1]) ?>
                         </td>
                     <?php endif; ?>
                     <td>
-                        <?= Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                        <?= Html::a('<span class="fas fa-pencil-alt"></span>', '#', [
                             'data' => [
                                 'toggle' => 'modal',
                                 'target' => '#file-' . $files->id . '-edit-modal'
                             ]
                         ]) ?>
-                        <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
+                        <?= Html::a('<i class="fas fa-times"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
                             'class' => 'delete-attachment-file',
                         ]) ?>
                     </td>
@@ -124,7 +125,7 @@ use yii\widgets\ActiveForm;
 //                        'width' => '50px',
                     'buttons' => [
                         'update' => function ($url, $model) {
-                            return Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                            return Html::a('<span class="fas fa-pencil-alt"></span>', '#', [
                                 'data' => [
                                     'toggle' => 'modal',
                                     'target' => '#file-' . $model->id . '-edit-modal'
@@ -132,7 +133,7 @@ use yii\widgets\ActiveForm;
                             ]);
                         },
                         'delete' => function ($url, $model) {
-                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
+                            return Html::a('<span class="fas fa-times"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                 'class' => 'delete-attachment-file',
                             ]);
                         }

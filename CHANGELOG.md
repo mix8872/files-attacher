@@ -1,5 +1,9 @@
 # Changelog
 
+##1.6.0
+
+Update icons
+
 ##1.5.6
 
 Fix bug with deleting all attachments of model when parent model is deleting

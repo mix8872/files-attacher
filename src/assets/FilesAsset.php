@@ -14,6 +14,7 @@ class FilesAsset extends \yii\web\AssetBundle
     public $sourcePath = '@vendor/mix8872/files-attacher/src/assets';
     public $css = [
         'fileinput/css/fileinput.min.css',
+        'fileinput/themes/explorer-fa/theme.css',
         'css/magnific-popup.css',
         'css/files.css',
     ];
