@@ -310,4 +310,17 @@ class File extends ActiveRecord
         $language = preg_replace('/-\w+$/', '', $language);
         return $this->hasMany(FileContent::class, ['file_id' => 'id'])->where(['lang' => $language])->one();
     }
+
+    public static function getFiles($model, $id, $tag, $single = false, $asQuery = false)
+    {
+        $fullModelName = str_replace('\\', '\\\\', get_class($model));
+        $files = File::find()->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])->where(['model_name' => $model->formName(), 'model_id' => $id, 'tag' => $tag])->orderBy('order');
+        if ($asQuery) {
+            return $files;
+        }
+        if ($single) {
+            return $files->one();
+        }
+        return $files->all();
+    }
 }

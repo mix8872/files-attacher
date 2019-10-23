@@ -1,5 +1,10 @@
 # Changelog
 
+##1.7.0
+
+Refactor getFiles() in behavior
+Add getFiles() function in model
+
 ##1.6.0
 
 Update icons

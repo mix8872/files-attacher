@@ -417,15 +417,7 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getFiles($tag, $single = false, $asQuery = false)
     {
-        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
-        $files = File::find()->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])->orderBy('order');
-        if ($asQuery) {
-            return $files;
-        }
-        if ($single) {
-            return $files->one();
-        }
-        return $files->all();
+        return File::getFiles($this->owner, $this->owner->id, $tag, $single, $asQuery);
     }
 
     /**
