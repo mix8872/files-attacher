@@ -1,5 +1,9 @@
 # Changelog
 
+##1.7.1
+
+Remove user_id from required in model
+
 ##1.7.0
 
 Refactor getFiles() in behavior
