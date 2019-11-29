@@ -11,6 +11,7 @@ namespace mix8872\filesAttacher\behaviors;
 use mix8872\filesAttacher\models\FileContent;
 use Yii;
 use mix8872\filesAttacher\models\File;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\base\InvalidConfigException;
 use yii\web\UploadedFile;
@@ -101,7 +102,7 @@ class FileAttachBehavior extends \yii\base\Behavior
         return [
             ActiveRecord::EVENT_AFTER_INSERT => 'saveAttachments',
             ActiveRecord::EVENT_AFTER_UPDATE => 'saveAttachments',
-            ActiveRecord::EVENT_AFTER_DELETE => 'deleteAllAttachments'
+            ActiveRecord::EVENT_AFTER_DELETE => 'deleteAllAttachments',
         ];
     }
 
@@ -402,11 +403,21 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function deleteAllAttachments()
     {
-        $files = File::findAll(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id]);
+        $files = File::findAll(['model_id' => $this->owner->id]);
         foreach ($files as $file) {
             $file->fullModelName = $this->fullModelName;
             $file->delete();
         }
+    }
+
+    /**
+     * Relation
+     * @return array|\yii\db\ActiveQuery
+     */
+    public function getModelFiles()
+    {
+        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
+        return $this->owner->hasMany(File::class, ['model_id' => 'id'])->andWhere(['model_name' => $this->_getModelName()])->with('content');
     }
 
     /**
@@ -417,7 +428,19 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getFiles($tag, $single = false, $asQuery = false)
     {
-        return File::getFiles($this->owner, $this->owner->id, $tag, $single, $asQuery);
+        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
+        $files = File::find()
+            ->leftJoin('file_content', ['file_id' => 'id'])
+            ->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])
+            ->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])
+            ->orderBy('order');
+        if ($asQuery) {
+            return $files;
+        }
+        if ($single) {
+            return $files->one();
+        }
+        return $files->all();
     }
 
     /**

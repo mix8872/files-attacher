@@ -1,5 +1,9 @@
 # Changelog
 
+##1.7.2
+
+Refactor behavior and widget
+
 ##1.7.1
 
 Remove user_id from required in model

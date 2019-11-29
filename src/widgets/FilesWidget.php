@@ -83,6 +83,7 @@ class FilesWidget extends \yii\base\Widget
         $inputFileTypes = ''; //file type for input
         $jsAllowedFileTypes = []; //allowed file types for js
         $jsAllowedFileExtensions = []; //allowed file extensions for js
+
         if (isset($this->filetypes)) {
             $this->_setFiletypes($this->filetypes, $inputFileTypes, $jsAllowedFileTypes, $jsAllowedFileExtensions);
         } elseif (isset($this->behavior->tags[$this->tag]['filetypes'])) {

@@ -1,6 +1,6 @@
 {
   "name": "mix8872/files-attacher",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Module for files attachment",
   "type": "yii2-extension",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "prefer-stable": true,
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.0.0",
+    "php": ">=7.1.0",
     "ext-mbstring": "*",
     "ext-intl": "*",
 	"intervention/image": "*",

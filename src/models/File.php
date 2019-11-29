@@ -91,9 +91,8 @@ class File extends ActiveRecord
     public function rules()
     {
         return [
-            [['model_id', 'model_name', 'name', 'filename', 'mime_type', 'tag', 'size'], 'required'],
+            [['model_id', 'model_name', 'name', 'filename', 'mime_type', 'tag', 'size', 'user_id'], 'required'],
             [['model_id', 'size', 'order', 'user_id', 'created_at'], 'integer'],
-            [['user_id'], 'default', 'value' => 0],
             [['model_name', 'name', 'filename', 'mime_type', 'tag'], 'string', 'max' => 255],
         ];
     }
@@ -305,23 +304,19 @@ class File extends ActiveRecord
      * @param null $language
      * @return array|null|ActiveRecord
      */
-    public function getContent($language = null)
+    public function getLangContent($language = null)
     {
-        $language = $language ? $language : Yii::$app->language;
+        $language = $language ?: Yii::$app->language;
         $language = preg_replace('/-\w+$/', '', $language);
         return $this->hasMany(FileContent::class, ['file_id' => 'id'])->where(['lang' => $language])->one();
     }
 
-    public static function getFiles($model, $id, $tag, $single = false, $asQuery = false)
+    /**
+     * @return array|null|ActiveRecord
+     */
+    public function getContent()
     {
-        $fullModelName = str_replace('\\', '\\\\', get_class($model));
-        $files = File::find()->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])->where(['model_name' => $model->formName(), 'model_id' => $id, 'tag' => $tag])->orderBy('order');
-        if ($asQuery) {
-            return $files;
-        }
-        if ($single) {
-            return $files->one();
-        }
-        return $files->all();
+        $language = preg_replace('/-\w+$/', '', Yii::$app->language);
+        return $this->hasOne(FileContent::class, ['file_id' => 'id'])->andWhere(['lang' => $language]);
     }
 }

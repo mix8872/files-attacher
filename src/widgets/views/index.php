@@ -10,7 +10,6 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
 use richardfan\sortable\SortableGridView;
-use yii\widgets\ActiveForm;
 
 ?>
 <div class="form-group">
@@ -32,11 +31,10 @@ use yii\widgets\ActiveForm;
                         previewFileType:'any',
                         browseLabel: '',
                         removeLabel: '',
-                        theme: 'fa',
                         mainClass: 'input-group',
                         allowedFileTypes: JSON.parse('" . $jsAllowedFileTypes . "'),
                         allowedFileExtensions: JSON.parse('" . $jsAllowedFileExtensions . "'),
-                        browseClass: 'btn btn-info'
+                        browseClass: 'btn btn-default'
                     });
                 });
             }(jQuery));
@@ -63,20 +61,20 @@ use yii\widgets\ActiveForm;
                         </td>
                     <?php else: ?>
                         <td>
-                            <?= Html::tag('i', '', ['class' => 'far fa-file', 'style' => 'font-size: 100px;']) ?>
+                            <?= Html::tag('i', '', ['class' => 'glyphicon glyphicon-file', 'style' => 'font-size: 100px;']) ?>
                         </td>
                         <td>
                             <?= Html::tag('span', $files->name . '.' . $type[1]) ?>
                         </td>
                     <?php endif; ?>
                     <td>
-                        <?= Html::a('<span class="fas fa-pencil-alt"></span>', '#', [
+                        <?= Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
                             'data' => [
                                 'toggle' => 'modal',
                                 'target' => '#file-' . $files->id . '-edit-modal'
                             ]
                         ]) ?>
-                        <?= Html::a('<i class="fas fa-times"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
+                        <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
                             'class' => 'delete-attachment-file',
                         ]) ?>
                     </td>
@@ -125,7 +123,7 @@ use yii\widgets\ActiveForm;
 //                        'width' => '50px',
                     'buttons' => [
                         'update' => function ($url, $model) {
-                            return Html::a('<span class="fas fa-pencil-alt"></span>', '#', [
+                            return Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
                                 'data' => [
                                     'toggle' => 'modal',
                                     'target' => '#file-' . $model->id . '-edit-modal'
@@ -133,7 +131,7 @@ use yii\widgets\ActiveForm;
                             ]);
                         },
                         'delete' => function ($url, $model) {
-                            return Html::a('<span class="fas fa-times"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
+                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                 'class' => 'delete-attachment-file',
                             ]);
                         }
@@ -150,7 +148,6 @@ use yii\widgets\ActiveForm;
                  style="display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <?php $form = ActiveForm::begin(); ?>
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                             <h4 class="modal-title">Свойства файла <?= $file->name ?></h4>
@@ -177,13 +174,22 @@ use yii\widgets\ActiveForm;
                                     if (preg_match('/\w{2}-\w{2}/ui', $lang)) {
                                         $lang = strtolower(preg_replace('/(\w{2})-(\w{2})/ui', "\$1", $lang));
                                     }
-                                    $content = $file->getContent($lang); ?>
+                                    $content = $file->getLangContent($lang); ?>
                                     <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
                                         <?php if (preg_match('/image/ui', $file->mime_type)): ?>
-                                            <?= $form->field($content, '[' . $content->id . ']name') ?>
-                                            <?= $form->field($content, '[' . $content->id . ']title') ?>
+                                            <div class="form-group">
+                                                <label class="control-label" for="file-<?= $content->id ?>-name">Name</label>
+                                                <?= Html::activeTextInput($content, '[' . $content->id . ']name', ['class' => 'form-control']) ?>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label" for="file-<?= $content->id ?>-title">Title</label>
+                                                <?= Html::activeTextInput($content, '[' . $content->id . ']title', ['class' => 'form-control']) ?>
+                                            </div>
                                         <?php endif; ?>
-                                        <?= $form->field($content, '[' . $content->id . ']description') ?>
+                                        <div class="form-group">
+                                            <label class="control-label" for="file-<?= $content->id ?>-description">Description</label>
+                                            <?= Html::activeTextInput($content, '[' . $content->id . ']description', ['class' => 'form-control']) ?>
+                                        </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -191,7 +197,7 @@ use yii\widgets\ActiveForm;
                         <div class="modal-footer">
                             <?= Html::button('Сохранить', ['class' => 'btn btn-primary file-edit-submit', 'data-url' => Url::to(['/filesAttacher/default/ajax-update', 'id' => $file->id])]) ?>
                         </div>
-                        <?php ActiveForm::end(); ?>
+
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div>
