@@ -15,6 +15,26 @@ use yii\base\Security;
 
 class FilesWidget extends \yii\base\Widget
 {
+    public const THEME_BROWSE = 'browse';
+    public const THEME_DRAGDROP = 'dragdrop';
+    public const THEME_BROWSE_DRAGDROP = 'browse-dragdrop';
+
+    /**
+     * @var boolean show preview (only if multiple false)
+     */
+    public $showPreview = true;
+    /**
+     * @var boolean enable drag-drop flag
+     */
+    public $theme = self::THEME_BROWSE;
+    /**
+     * @var string set drag-drop area width, default - '100%'
+     * */
+    public $width = '100%';
+    /**
+     * @var string set drag-drop area height, default - '100px'
+     * */
+    public $height = '100px';
     /**
      * @var Model the data model that this widget is associated with.
      */
@@ -48,6 +68,10 @@ class FilesWidget extends \yii\base\Widget
      * */
     public $label;
     /**
+     * @var int max count of attacment files, 0 - unlimited
+     * */
+    public $maxCount = 0;
+    /**
      * @var \mix8872\filesAttacher\behaviors\FileAttachBehavior instance of FileAttachBehavior
      */
     private $behavior;
@@ -69,9 +93,7 @@ class FilesWidget extends \yii\base\Widget
 
         $this->behavior = $this->model->getBehavior('FileAttachBehavior');
 
-        if (!$this->label) {
-            $this->label = $ths->title ?? $this->behavior->tags[$this->tag]['label'] ?? $this->model->attributeLabels()[$this->tag] ?? $this->tag;
-        }
+        $this->label = $this->label ?? $this->title ?? $this->behavior->tags[$this->tag]['label'] ?? $this->model->attributeLabels()[$this->tag] ?? $this->tag;
 
         FilesAsset::register($this->view);
     }
@@ -106,7 +128,12 @@ class FilesWidget extends \yii\base\Widget
             'query' => $this->model->getFiles($this->tag, 0, 1),
             'languages' => $languages,
             'label' => $this->label,
-            'uniqueName' => (new Security())->generateRandomString(10)
+            'uniqueName' => (new Security())->generateRandomString(10),
+            'theme' => $this->theme,
+            'width' => $this->width,
+            'height' => $this->height,
+            'maxCount' => $this->maxCount,
+            'showPreview' => $this->showPreview
         ]);
     }
 

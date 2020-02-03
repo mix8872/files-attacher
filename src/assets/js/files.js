@@ -1,14 +1,17 @@
 (function ($) {
+
     $(document).on('click', 'a.delete-attachment-file', function (e) {
         e.preventDefault();
         var that = $(this);
         var url = that.attr('href');
+        var table = that.closest('table');
         if (confirm('Вы действительно хотите удалить элемент?')) {
             $.ajax({
                 url: url,
                 method: 'post',
                 success: function (response) {
-                    that.closest('tr').remove();
+                    table.trigger('fileDeleted');
+                    table.remove();
                     return false;
                 },
             });

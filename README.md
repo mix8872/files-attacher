@@ -113,7 +113,7 @@ First, you must configure the behavior of the required models in this way:
 public function behaviors()
     {
         return [
-            [
+            'FileAttachBehavior' => [
                 'class' => \mix8872\filesAttacher\behaviors\FileAttachBehavior::class,
                 'tags' => ['images','videos'],
                 'deleteOld' => []
@@ -122,9 +122,10 @@ public function behaviors()
         ];
     }
 ```
+
 In tags attribute you may define tags for attach files, if you define same tags in delteOld attribute then files loaded with this tags will be rewritten by newly added files.
 
-Also you can configure attacment parameters in directly in behavior:
+Also you can configure attachment parameters directly in behavior:
 
 ```php
 public function behaviors()
@@ -148,7 +149,7 @@ public function behaviors()
 ```
 
 But if you define same paramets in widget then widget parameters will be prioritized.
-In this case you must declare fileAttachBehavior with this name 'FileAttachBehavior':
+Any way you must declare fileAttachBehavior with this name `FileAttachBehavior`:
 
 ```php
 public function behaviors()
@@ -180,12 +181,15 @@ use mix8872\filesAttacher\widgets\FilesWidget;
 		'tag' => 'videos', // one of the tags listed in the model
 		'multiple' => true, // true or false. allow multiple loading
 		'filetypes' => ['video/*'], // array of mime types of allowed files
+        'theme' => FilesWidget::THEME_BROWSE, // or THEME_DRAGDROP or THEME_BROWSE_DRAGDROP
+        'width' => '100%', // width of dragDrop zone
+        'height' => '100px', // height of dragDrop zone
 	]) ?>
 
 <?php ActiveForm::end() ?>
 ```
 
-IMPORTANT ! you may define multipart/form-data enctype in you form!
+**IMPORTANT ! you may define `multipart/form-data` enctype in you form!**
 
 Also you can attach file to model by url as follows:
 ```php
@@ -197,10 +201,10 @@ You can get the model files by calling the method:
 $files = $model->getFiles('tag'); //array of file objects
 ```
 
-`public function getFiles(string $tag, bool $single, bool $asQuery)`
+```
+public function getFiles(string $tag, bool $single, bool $asQuery)
+```
 
-$tag - tag of you attachment
-$single - if true - returns single attachment object
-$asQuery - if tru - returns ActiveQuery object
-
-
+- $tag - tag of you attachment
+- $single - if true - returns single attachment object
+- $asQuery - if true - returns ActiveQuery object

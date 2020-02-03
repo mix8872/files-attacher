@@ -9,20 +9,17 @@
 namespace mix8872\filesAttacher\assets;
 
 
-class FilesAsset extends \yii\web\AssetBundle
+class DragdropAsset extends \yii\web\AssetBundle
 {
     public $sourcePath = '@vendor/mix8872/files-attacher/src/assets';
     public $css = [
-        'css/magnific-popup.css',
-        'css/files.css',
+        'dropify/dropify-multiple.min.css',
     ];
     public $js = [
-        'js/jquery.magnific-popup.min.js',
-        'js/files.js',
+        'dropify/dropify-multiple.js'
     ];
 
     public $depends = [
-		'yii\jui\JuiAsset',
-		'backend\assets\AppAsset',
+		'mix8872\filesAttacher\assets\FilesAsset',
     ];
 }

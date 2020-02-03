@@ -1,5 +1,15 @@
 # Changelog
 
+##1.8.1
+
+Fix bugs
+Change icons
+
+##1.8.0
+
+Added drop area feature
+Fix file input theme
+
 ##1.7.2
 
 Refactor behavior and widget

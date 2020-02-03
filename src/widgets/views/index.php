@@ -10,71 +10,59 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
 use richardfan\sortable\SortableGridView;
+use mix8872\filesAttacher\widgets\FilesWidget;
 
 ?>
 <div class="form-group">
-    <label class="control-label" for="<?= $uniqueName ?>"><?= $label ?></label>
-    <input type="file"
-           name="<?= 'Attachment[' . $model->formName() . ']' . ($model->id ? '[' . $model->id . ']' : '') . '[' . $tag . ']' . ($multiple ? '[]' : '') ?>"
-           id="<?= $uniqueName ?>" <?= $multiple ? 'multiple' : '' ?> accept="<?= $inputFileTypes ?>"
-           class="form-control"
-           title="Выбрать файл"/>
-
-    <?php
-    $this->registerJs("
-            (function($){
-                $(function(){
-                    $('#" . $uniqueName . "').fileinput({
-                        showUpload: false,
-                        minFileCount: 0,
-                        language: 'ru',
-                        previewFileType:'any',
-                        browseLabel: '',
-                        removeLabel: '',
-                        mainClass: 'input-group',
-                        allowedFileTypes: JSON.parse('" . $jsAllowedFileTypes . "'),
-                        allowedFileExtensions: JSON.parse('" . $jsAllowedFileExtensions . "'),
-                        browseClass: 'btn btn-default'
-                    });
-                });
-            }(jQuery));
-        "); ?>
+    <?php if ($theme === FilesWidget::THEME_DRAGDROP) : ?>
+        <?= $this->render('_dragdrop', compact('uniqueName',
+            'label', 'model', 'tag', 'multiple', 'inputFileTypes',
+            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'width', 'height', 'maxcount', 'multiple', 'query')) ?>
+    <?php else: ?>
+        <?= $this->render('_fileinput', compact('uniqueName',
+            'label', 'model', 'tag', 'multiple', 'inputFileTypes',
+            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'maxcount', 'theme')) ?>
+    <?php endif; ?>
     <?php if (!$multiple):
         $files = $query->one();
-        if (!empty($files)): ?>
+        if ($files): ?>
             <table class="file-table">
                 <tr>
                     <?php $type = explode('/', $files->mime_type); ?>
-                    <?php if ($type[0] == 'image'): ?>
-                        <td>
-                            <?= Html::a(
-                                Html::img($files->url, ['width' => '200px']),
-                                $files->url,
-                                ['class' => 'lightbox']
-                            ); ?>
-                        </td>
-                    <?php elseif ($type[0] == 'video'): ?>
-                        <td>
-                            <?= Html::tag('video', Html::tag('source', '', ['src' => $files->url, 'type' => $files->mime_type]),
-                                ['width' => '200px', 'controls' => true]
-                            ) ?>
-                        </td>
-                    <?php else: ?>
-                        <td>
-                            <?= Html::tag('i', '', ['class' => 'glyphicon glyphicon-file', 'style' => 'font-size: 100px;']) ?>
-                        </td>
-                        <td>
-                            <?= Html::tag('span', $files->name . '.' . $type[1]) ?>
-                        </td>
+                    <?php if ($showPreview && $theme !== FilesWidget::THEME_DRAGDROP): ?>
+                        <?php if ($type[0] == 'image'): ?>
+                            <td>
+                                <?= Html::a(
+                                    Html::img($files->url, ['width' => '200px']),
+                                    $files->url,
+                                    ['class' => 'lightbox']
+                                ); ?>
+                            </td>
+                        <?php elseif ($type[0] == 'video'): ?>
+                            <td>
+                                <?= Html::tag('video', Html::tag('source', '', ['src' => $files->url, 'type' => $files->mime_type]),
+                                    ['width' => '200px', 'controls' => true]
+                                ) ?>
+                            </td>
+                        <?php else: ?>
+                            <td>
+                                <?= Html::tag('i', '', ['class' => 'fa far fa-file', 'style' => 'font-size: 100px;']) ?>
+                            </td>
+                            <td>
+                                <?= Html::tag('span', $files->name . '.' . $type[1]) ?>
+                            </td>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <td>
-                        <?= Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                        <?= Html::a('<span class="fa fas fa-pencil-alt"></span>', '#', [
+                            'title' => Yii::t('files', 'Редактировать атрибуты'),
                             'data' => [
                                 'toggle' => 'modal',
                                 'target' => '#file-' . $files->id . '-edit-modal'
                             ]
                         ]) ?>
-                        <?= Html::a('<i class="glyphicon glyphicon-remove"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
+                        <?= Html::a('<i class="fa fa-times"></i>', ['/filesAttacher/default/delete', 'id' => $files->id], [
+                            'title' => Yii::t('files', 'Удалить'),
                             'class' => 'delete-attachment-file',
                         ]) ?>
                     </td>
@@ -88,13 +76,18 @@ use richardfan\sortable\SortableGridView;
                 return ['id' => $model->id];
             },
             'showOnEmpty' => false,
+            'emptyText' => '',
             'sortUrl' => Url::to(['/filesAttacher/default/sort']),
             'rowOptions' => [
                 'class' => 'file_row'
             ],
             'columns' => [
-
-                'name',
+                [
+                    'attribute' => 'name',
+                    'value' => function ($model) {
+                        return mb_strimwidth($model->name, 0, 30, ' ...');
+                    }
+                ],
                 'mime_type',
                 [
                     'attribute' => 'filename',
@@ -123,7 +116,7 @@ use richardfan\sortable\SortableGridView;
 //                        'width' => '50px',
                     'buttons' => [
                         'update' => function ($url, $model) {
-                            return Html::a('<span class="glyphicon glyphicon-pencil"></span>', '#', [
+                            return Html::a('<span class="fa fas fa-pencil-alt"></span>', '#', [
                                 'data' => [
                                     'toggle' => 'modal',
                                     'target' => '#file-' . $model->id . '-edit-modal'
@@ -131,7 +124,7 @@ use richardfan\sortable\SortableGridView;
                             ]);
                         },
                         'delete' => function ($url, $model) {
-                            return Html::a('<span class="glyphicon glyphicon-remove"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
+                            return Html::a('<span class="fa fa-times"></span>', ['/filesAttacher/default/delete', 'id' => $model->id], [
                                 'class' => 'delete-attachment-file',
                             ]);
                         }
@@ -143,14 +136,13 @@ use richardfan\sortable\SortableGridView;
     <?php if ($files = $query->all()): ?>
         <?php foreach ($files as $file): ?>
             <div id="file-<?= $file->id ?>-edit-modal" class="modal fade" tabindex="-1" role="dialog"
-                 aria-labelledby="myModalLabel"
                  aria-hidden="true"
                  style="display: none;">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
+                            <h4 class="modal-title">Свойства файла <?= mb_strimwidth($file->name, 0, 30, ' ...') ?></h4>
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                            <h4 class="modal-title">Свойства файла <?= $file->name ?></h4>
                         </div>
                         <div class="modal-body">
                             <ul class="nav nav-tabs navtab-bg nav-justified">
@@ -178,11 +170,13 @@ use richardfan\sortable\SortableGridView;
                                     <div class="tab-pane<?= $i++ == 0 ? ' active' : '' ?>" id="tab-<?= $lang ?>">
                                         <?php if (preg_match('/image/ui', $file->mime_type)): ?>
                                             <div class="form-group">
-                                                <label class="control-label" for="file-<?= $content->id ?>-name">Name</label>
+                                                <label class="control-label"
+                                                       for="file-<?= $content->id ?>-name">Name</label>
                                                 <?= Html::activeTextInput($content, '[' . $content->id . ']name', ['class' => 'form-control']) ?>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label" for="file-<?= $content->id ?>-title">Title</label>
+                                                <label class="control-label"
+                                                       for="file-<?= $content->id ?>-title">Title</label>
                                                 <?= Html::activeTextInput($content, '[' . $content->id . ']title', ['class' => 'form-control']) ?>
                                             </div>
                                         <?php endif; ?>
