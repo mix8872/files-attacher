@@ -163,6 +163,14 @@ class FileAttachBehavior extends \yii\base\Behavior
             }
         }
 
+		if (in_array($tag, $this->deleteOld)) {
+			if ($olds = $this->getFiles($tag)) {
+				foreach ($olds as $old) {
+					$old->delete();
+				}
+			}
+		}
+
         $this->_setParams();
 
         $file = new class()
