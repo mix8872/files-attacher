@@ -17,11 +17,11 @@ use mix8872\filesAttacher\widgets\FilesWidget;
     <?php if ($theme === FilesWidget::THEME_DRAGDROP) : ?>
         <?= $this->render('_dragdrop', compact('uniqueName',
             'label', 'model', 'tag', 'multiple', 'inputFileTypes',
-            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'width', 'height', 'maxcount', 'multiple', 'query')) ?>
+            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'width', 'height', 'maxCount', 'multiple', 'query')) ?>
     <?php else: ?>
         <?= $this->render('_fileinput', compact('uniqueName',
             'label', 'model', 'tag', 'multiple', 'inputFileTypes',
-            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'maxcount', 'theme')) ?>
+            'jsAllowedFileTypes', 'jsAllowedFileExtensions', 'maxCount', 'theme')) ?>
     <?php endif; ?>
     <?php if (!$multiple):
         $files = $query->one();
