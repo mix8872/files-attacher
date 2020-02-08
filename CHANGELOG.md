@@ -1,5 +1,9 @@
 # Changelog
 
+##1.9.1
+
+Fix variable bug in the widget
+
 ##1.9.0
 
 Use himiklab/yii2-sortable-grid-view-widget instead richardfan1126/yii2-sortable-gridview
