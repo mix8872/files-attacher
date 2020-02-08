@@ -9,7 +9,7 @@
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\data\ActiveDataProvider;
-use richardfan\sortable\SortableGridView;
+use himiklab\sortablegrid\SortableGridView;
 use mix8872\filesAttacher\widgets\FilesWidget;
 
 ?>
@@ -77,7 +77,7 @@ use mix8872\filesAttacher\widgets\FilesWidget;
             },
             'showOnEmpty' => false,
             'emptyText' => '',
-            'sortUrl' => Url::to(['/filesAttacher/default/sort']),
+            'sortableAction' => Url::to(['/filesAttacher/default/sort']),
             'rowOptions' => [
                 'class' => 'file_row'
             ],

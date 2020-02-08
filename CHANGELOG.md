@@ -1,5 +1,9 @@
 # Changelog
 
+##1.9.0
+
+Use himiklab/yii2-sortable-grid-view-widget instead richardfan1126/yii2-sortable-gridview
+
 ##1.8.2
 
 Fix bug in behavior attachByUrl func

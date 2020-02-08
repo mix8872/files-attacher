@@ -1,6 +1,6 @@
 {
   "name": "mix8872/files-attacher",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "description": "Module for files attachment",
   "type": "yii2-extension",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "ext-mbstring": "*",
     "ext-intl": "*",
 	"intervention/image": "*",
-	"richardfan1126/yii2-sortable-gridview": "*"
+	"himiklab/yii2-sortable-grid-view-widget" : "*"
   },
   "autoload": {
     "psr-4": {

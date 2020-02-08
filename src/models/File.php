@@ -5,6 +5,7 @@ namespace mix8872\filesAttacher\models;
 use Yii;
 use yii\helpers\Url;
 use yii\behaviors\TimestampBehavior;
+use himiklab\sortablegrid\SortableGridBehavior;
 use yii\db\ActiveRecord;
 
 /**
@@ -69,7 +70,10 @@ class File extends ActiveRecord
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at'],
                 ],
             ],
-//            'mImage' => ['class' => '\maxlapko\components\ImageBehavior'],
+            'sort' => [
+                'class' => SortableGridBehavior::class,
+                'sortableAttribute' => 'order'
+            ],
         ];
     }
 

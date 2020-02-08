@@ -3,7 +3,7 @@
 namespace mix8872\filesAttacher\controllers;
 
 use mix8872\filesAttacher\models\FileContent;
-use richardfan\sortable\SortableAction;
+use himiklab\sortablegrid\SortableGridAction;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\VerbFilter;
@@ -45,9 +45,8 @@ class DefaultController extends \yii\web\Controller
     public function actions(){
         return [
             'sort' => [
-                'class' => SortableAction::class,
-                'activeRecordClassName' => 'mix8872\filesAttacher\models\File',
-                'orderColumn' => 'order',
+                'class' => SortableGridAction::className(),
+                'modelName' => 'mix8872\filesAttacher\models\File',
             ],
         ];
     }
