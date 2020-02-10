@@ -126,9 +126,15 @@ class FileAttachBehavior extends \yii\base\Behavior
                 $tag = $key;
             }
 
-            $attachments = UploadedFile::getInstancesByName('Attachment[' . $this->modelClass . '][' . $tag . ']');
+            $attachments = UploadedFile::getInstancesByName("Attachment[{$this->modelClass}][{$tag}]");
             if (empty($attachments)) {
-                $attachments = UploadedFile::getInstancesByName('Attachment[' . $this->modelClass . '][' . $this->modelId . '][' . $tag . ']');
+                $attachments = UploadedFile::getInstancesByName("Attachment[{$this->modelClass}][{$this->modelId}][{$tag}]");
+            }
+            if (empty($attachments)) {
+                $attachments = UploadedFile::getInstancesByName("{$this->modelClass}[{$tag}]");
+            }
+            if (empty($attachments)) {
+                $attachments = UploadedFile::getInstancesByName("{$this->modelClass}[{$this->modelId}][{$tag}]");
             }
 
             if ($attachments && !empty($attachments)) {
