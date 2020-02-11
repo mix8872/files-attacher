@@ -5,13 +5,17 @@
         var that = $(this);
         var url = that.attr('href');
         var table = that.closest('table');
+        var tr = that.closest('tr');
         if (confirm('Вы действительно хотите удалить элемент?')) {
             $.ajax({
                 url: url,
                 method: 'post',
                 success: function (response) {
                     table.trigger('fileDeleted');
-                    table.remove();
+                    tr.remove();
+                    if (!$('tbody tr', table).length) {
+                        table.remove();
+                    }
                     return false;
                 },
             });

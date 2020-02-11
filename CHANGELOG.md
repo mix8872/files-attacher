@@ -1,5 +1,9 @@
 # Changelog
 
+##1.10.1
+
+Fix js bug
+
 ##1.10.0
 
 Change UploadedFile handle in behavior. Now it take file also with model name
