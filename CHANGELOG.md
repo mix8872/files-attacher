@@ -1,5 +1,10 @@
 # Changelog
 
+##1.10.2
+
+Bugfix
+Refactor behavior
+
 ##1.10.1
 
 Fix js bug

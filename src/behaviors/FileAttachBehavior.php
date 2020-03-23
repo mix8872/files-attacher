@@ -430,7 +430,6 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getModelFiles()
     {
-        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
         return $this->owner->hasMany(File::class, ['model_id' => 'id'])->andWhere(['model_name' => $this->_getModelName()])->with('content');
     }
 
@@ -442,19 +441,13 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getFiles($tag, $single = false, $asQuery = false)
     {
-        $fullModelName = str_replace('\\', '\\\\', $this->_getModelName(1));
-        $files = File::find()
-            ->leftJoin('file_content', ['file_id' => 'id'])
-            ->select(['{{file}}.*', '("' . $fullModelName . '") as fullModelName'])
-            ->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id, 'tag' => $tag])
-            ->orderBy('order');
         if ($asQuery) {
-            return $files;
+            return $this->getModelFiles()->andWhere(['tag' => $tag]);
         }
         if ($single) {
-            return $files->one();
+            return $this->getModelFiles()->andWhere(['tag' => $tag])->one();
         }
-        return $files->all();
+        return $this->getModelFiles()->andWhere(['tag' => $tag])->all();
     }
 
     /**
@@ -463,13 +456,10 @@ class FileAttachBehavior extends \yii\base\Behavior
      */
     public function getAllFiles($asQuery = false)
     {
-        $filesModel = new File();
-        $filesModel->fullModelName = $this->_getModelName(1);
-        $files = $filesModel->find()->where(['model_name' => $this->_getModelName(), 'model_id' => $this->owner->id])->orderBy('order')->indexBy('tag');
         if ($asQuery) {
-            return $files;
+            return $this->getModelFiles();
         }
-        return $files->all();
+        return $this->getModelFiles()->all();
     }
 
     /**
