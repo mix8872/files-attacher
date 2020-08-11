@@ -206,9 +206,17 @@ class FileAttachBehavior extends \yii\base\Behavior
             $file->extension = $data['extension'];
             $file->size = filesize($url);
         } else {
+            stream_context_set_default( [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ],
+            ]);
             $data = @get_headers($url, true);
             $path = parse_url($url, PHP_URL_PATH);
             $file->baseName = $path ? basename($path) : (isset($data['ETag']) ? trim($data['ETag'], '"') : (new Security())->generateRandomString(12));
+            preg_match('/\.\w+/ui', $file->baseName, $matches);
+            $extension = trim(array_shift($matches), '.');
             $file->type = $data['Content-Type'] ?? self::$types[$extension];
             $file->extension = substr(strstr($file->type, '/'), 1, strlen($file->type));
             $file->size = $data['Content-Length'] ?? 0;
@@ -247,7 +255,8 @@ class FileAttachBehavior extends \yii\base\Behavior
             if (preg_match("/^image\/((?!svg|gif)).*$/i", $file->type)) {
 
                 try {
-                    $imgSaveRes = $this->manager->make($file->tempName)->orientate()->save($this->filePath);
+                    $fl = file_get_contents($file->tempName);
+                    $imgSaveRes = $this->manager->make($fl)->orientate()->save($this->filePath);
                 } catch (\Exception $e) {
                     error_log($e->getMessage());
                     return false;
@@ -395,6 +404,7 @@ class FileAttachBehavior extends \yii\base\Behavior
                 )
             )
         ) {
+            $name = preg_replace('/\.\w+$/', '', $name);
             $filename = $baseFileName = Translit::t($name);
             $i = 1;
             while (is_file($path . '/' . $filename . "." . $extension)) {
