@@ -1,4 +1,4 @@
-Files attacher module for Yii2
+Files attacher module for Yii2 [deprecated]
 =================
 
 Files attacher module for attache any files to the your models.
